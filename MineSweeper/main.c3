@@ -109,8 +109,8 @@ fn void Game.render(Game* game, bool force_reveal){
 		}
 		to_print.push('\n');
 	}
-	io::printf("%s\n" , to_print.to_tarray());
-	io::print("> ");
+	tercontrol::tc_print( to_print.to_tarray());
+	tercontrol::tc_print("\n> ");
 	to_print.free();
 }
 
@@ -137,7 +137,7 @@ fn GameState Game.input(Game* game){
 		game.board[ind].marked = !game.board[ind].marked;
 	}
 	//switching from libc::getchar to tercontrol::tc_getch requires this to fix output
-	io::printn();
+	tercontrol::tc_print("\n");
 
 	game.px = math::clamp(newX, 0, game.size-1);
 	game.py = math::clamp(newY, 0, game.size-1);
@@ -194,6 +194,8 @@ fn CellState mine_count(Game* game, int x, int y){
 }
 
 fn int main(){
+	tercontrol::tc_enter_alt_screen();
+	tercontrol::tc_print("Welcome to Tic-Tac-Toe!\n");
 	Game game;
 	//recommended difficulties
 	double difficulty = 0.12;
@@ -205,16 +207,22 @@ fn int main(){
 	GameState current = GameState.CONT;
 	while(current == GameState.CONT){
 		current = game.input();
+		tercontrol::tc_clear_screen();
+		tercontrol::tc_set_cursor(0, 0);
+		tercontrol::tc_print("\n");
 		game.render(false);
-		
-		if(current == GameState.LOSE){
-			int loss = game.lose();
-			game.board[loss].state = EXPLODED;
-			game.render(true);
-			io::printf("You lose! Better luck next time!\n");
-		}else if (current == GameState.WIN){
-			io::printf("You win!\n");
-		}
 	}
+	tercontrol::tc_clear_screen();
+	if(current == GameState.LOSE){
+		int loss = game.lose();
+		game.board[loss].state = EXPLODED;
+		game.render(true);
+		tercontrol::tc_print("You lose! Better luck next time!\n");
+	}else if (current == GameState.WIN){
+		tercontrol::tc_print("You win!\n");
+	}
+	tercontrol::tc_print("Press any key to exit...");
+	game.input();
+	tercontrol::tc_exit_alt_screen();
 	return 0;
 }
