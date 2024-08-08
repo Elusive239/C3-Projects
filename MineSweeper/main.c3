@@ -1,10 +1,12 @@
 
-import std::io;
 import libc;
+import libc::termios;
+import std::io;
 import std::math;
 import std::collections::list;
 import std::math::random;
 import std::core::mem;
+import tercontrol;
 
 enum CellState : int (char to_char) {
 	NONE = '0',
@@ -41,15 +43,6 @@ struct Cell{
 	CellState state;
 	bool revealed;
 	bool marked;
-}
-
-fn void set_raw() @init{
-	io::printn("Hello, world!");
-}
-
-fn void set_back() @finalizer{
-	io::printn("Goodbye, world!");
-	unreachable();
 }
 
 fn void Game.init(Game* game, int size, double difficulty){
@@ -122,8 +115,8 @@ fn void Game.render(Game* game, bool force_reveal){
 }
 
 fn GameState Game.input(Game* game){
-	char c = (char) libc::getchar();
-
+	//char c = (char) libc::getchar();
+	char c = (char) tercontrol::tc_getch();
 	int newX = game.px;
 	int newY = game.py;
 
@@ -143,10 +136,8 @@ fn GameState Game.input(Game* game){
 		int ind = to_1d(game.px, game.py, game.size);
 		game.board[ind].marked = !game.board[ind].marked;
 	}
-
-	while(c != '\n'){
-		c = (char) libc::getchar();
-	}
+	//switching from libc::getchar to tercontrol::tc_getch requires this to fix output
+	io::printn();
 
 	game.px = math::clamp(newX, 0, game.size-1);
 	game.py = math::clamp(newY, 0, game.size-1);
@@ -209,7 +200,7 @@ fn int main(){
 	//beginer = 0.12
 	//intermediate = 0.15
 	//hard = 0.17
-	game.init(3, difficulty);
+	game.init(15, difficulty);
 	game.render(false);
 	GameState current = GameState.CONT;
 	while(current == GameState.CONT){

@@ -1,0 +1,25 @@
+module tercontrol;
+
+extern fn char *tc_color_id(uint cid, int l);
+extern fn char *tc_rgb(int r, int g, int b, int l);
+extern fn void tc_get_cols_rows(int *cols, int *rows);
+extern fn void tc_hide_cursor();
+extern fn void tc_show_cursor();
+extern fn void tc_enter_alt_screen();
+extern fn void tc_exit_alt_screen();
+extern fn void tc_echo_off();
+extern fn void tc_echo_on();
+extern fn void tc_canon_off();
+extern fn void tc_canon_on();
+extern fn void tc_clear_partial(int x, int y, int width, int height);
+extern fn void tc_get_cursor(int *x, int *y);
+extern fn void tc_set_cursor(int x, int y);
+extern fn void tc_move_cursor(int x, int y);
+extern fn void tc_clear_screen();
+extern fn void tc_clear_entire_line();
+extern fn void tc_clear_line_till_cursor();
+extern fn void tc_clear_line_from_cursor();
+extern fn void tc_clear_from_top_to_cursor();
+extern fn void tc_clear_from_cursor_to_bottom();
+extern fn void tc_print(char *s);
+extern fn int tc_getch();
