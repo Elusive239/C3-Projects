@@ -5,92 +5,121 @@ import std::core::mem;
 import libc;
 import std::collections::list;
 
-enum TokenType : int (String value){
-	IMPORT = "import",
-	MODULE = "module",
-	FN = "fn", 
-	EMUM = "enum", 
-	STRUCT = "struct", 
-	LEFT_PAREN = "(", 
-	RIGHT_PAREN = ")", 
-	COMMENT = "//",
-	MULTI_COMMENT_START = "/*",
-	MULTI_COMMENT_END = "*/",
-	SEMICOLON = ";",
-	COLON = ":",
-	IDENTIFIER = "" //shouldn't get this unless its none of the above, so this stays empty.
-}
-
-macro TokenType string_as_token(String value){
-	TokenType! type = enum_by_name(TokenType, value);
-	if(catch anyfault f = type) return TokenType.IDENTIFIER;
-	return type;
-}
-
-macro TokenType char_as_token(char value){
-	TokenType! type = enum_by_name(TokenType, $stringify(value));
-	if(catch anyfault f = type) return TokenType.IDENTIFIER;
-	return type;
-}
-
-struct Token{
-	String value;
-	TokenType type;
-}
-
-def TokenList = List(<Token>);
-
-
 fn int main(String[] args)
 {
 	// io::printn("Hello, World!");
 	String path = $$FILEPATH;//"main.c3";
-	io::File! file = std::io::file::open(path, "r")!!;
-	usz len = file.seek(0, END)!!;
-	file.seek(0, SET)!!;
-	std::io::file::get_size(path)!!;
+	String file = read_file(path);
 
+	int lineCount = 1;
 	TokenList list;
 	DString dstring;
 	defer list.free();
 	defer dstring.free();
-	while(len-- >= 200){
-		char current = file.read_byte()!!;
-		TokenType type = char_as_token(current);
-		if(type != TokenType.IDENTIFIER){
-			Token token;
-			token.value = dstring.copy_str();
-			token.type = string_as_token(token.value);
-			list.push(token);
+	defer file.free();
 
-			Token token2;
-			token2.value = type.value;
-			token2.type = type;
-			list.push(token2);
-			dstring.clear();
+	int index = 0;
+	while(index < file.len){
+		char current = file[index++];
+		if(current == '\n'){
+			if(dstring.len() > 0){
+				String copy = dstring.copy_str();
+				list.append_token(copy, string_as_token(copy), lineCount);
+				dstring.clear();
+			}
+			lineCount++;
+			continue;
 		}
 
-		if(!current.is_blank()) dstring.append(current);
+		if(std::core::string::char_in_set(current, "0123456789")){
+			if(dstring.len() > 0){
+				String copy = dstring.copy_str();
+				list.append_token(copy, string_as_token(copy), lineCount);
+				dstring.clear();
+			}
+			while( index < file.len && std::core::string::char_in_set(current, "0123456789")){
+				dstring.append(current);
+				current =  file[index++];
+			}
+			list.append_token(dstring.copy_str(), TokenType.NUMBER_LIT, lineCount);
+			dstring.clear();
+			continue;
+		}
+
+		TokenType type = char_as_token(current);
+
+		if(type == TokenType.DOUBLE_QUOTE || type == TokenType.QUOTE){
+			if(dstring.len() > 0){
+				String copy = dstring.copy_str();
+				list.append_token(copy, string_as_token(copy), lineCount);
+				dstring.clear();
+			}
+			current = file[index++];
+			while( index < file.len && type != char_as_token(current)){
+				dstring.append(current);
+				current =  file[index++];
+			}
+			list.append_token(dstring.copy_str(), TokenType.STRING_LIT, lineCount);
+			dstring.clear();
+			continue;
+		}
+
+		if(type != TokenType.IDENTIFIER){
+			if(dstring.len() > 0){
+				String copy = dstring.copy_str();
+				list.append_token(copy, string_as_token(copy), lineCount);
+				dstring.clear();
+			}
+			list.append_token(type.value, type, lineCount);
+			continue;
+		}
+
 
 		type = string_as_token(dstring.str_view());
-		if(type != TokenType.IDENTIFIER){
-			Token token;
-			token.value = type.value;
-			token.type = type;
-			list.push(token);
+		if(type == TokenType.COMMENT){
 			dstring.clear();
-		}else if(current.is_blank()){
-			Token token;
-			token.value = dstring.copy_str();
-			token.type = type;
-			list.push(token);
+			while( index < file.len && current != '\n'){
+				dstring.append(current);
+				current =  file[index++];
+			}
+			index++;
+			list.append_token(dstring.copy_str()[0..^1], TokenType.COMMENT, lineCount);
+			lineCount++;
 			dstring.clear();
+			continue;
 		}
 
-		//libc::putchar(current)!!;
+		if(type == TokenType.MULTI_COMMENT_START){
+			dstring.clear();
+			while(index < file.len && !dstring.str_view().contains(TokenType.MULTI_COMMENT_END.value)){
+				dstring.append(current);
+				current =  file[index++];
+				while(index < file.len && current == '\n'){
+					lineCount++;
+					current =  file[index++];
+				}
+			}
+			assert(dstring.str_view().contains(TokenType.MULTI_COMMENT_END.value));
+			String copy = dstring.copy_str();
+			list.append_token(copy[0..^2], TokenType.COMMENT, lineCount);
+			lineCount++;
+			dstring.clear();
+			continue;
+		}
+
+		if(current == ' ' || current == '\r' || current == '\t') {
+			if(dstring.len() > 0){
+				String copy = dstring.copy_str();
+				list.append_token(copy, string_as_token(copy), lineCount);
+				dstring.clear();
+			}
+			continue;
+		}
+		dstring.append(current);
 	}
-	io::printn(dstring.str_view());
+	list.append_token(TokenType.EOF.value, TokenType.EOF, lineCount);
+	// io::printn(dstring.str_view());
 	io::printfn("Token Count: %d", list.len());
-	file.close()!!;
+	list.dump_tokens("tokens.txt");
 	return 0;
 }
