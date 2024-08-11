@@ -5,95 +5,68 @@ import std::core::mem;
 import libc;
 import std::collections::list;
 
-macro String read_file(String path){
-    String! str = ( String) mem::new_array(char, std::io::file::get_size(path));
-	//defer (void)str.free();
-	String! read_file = (String) std::io::file::load_buffer(path, (char[])str);
-	//defer (void) read_file.free();
-	if(catch anyfault f = read_file){
-		return "no file found.";
+fault MyResult
+{
+	T_OVERFLOW,
+    T_WRONG_TYPE,
+}
+
+macro bool TokenList.has_next(&self) => self.len > 0;
+
+macro bool TokenList.eof(&self) => !self.has_next() ? MyResult.T_OVERFLOW : self[0].type == TokenType.EOF;
+
+macro Token TokenList.peek(&self, int offset = 0) => !self.has_next() ? MyResult.T_OVERFLOW : self[offset];
+
+macro Token TokenList.next(&self) => !self.has_next() ? MyResult.T_OVERFLOW : self.pop_first();
+
+macro Token TokenList.expect(&self, TokenType type){
+	if(!self.has_next()){
+		return MyResult.T_OVERFLOW;
 	}
-    return read_file;
-}
-
-enum TokenType : int (String value){
-	EOF = "EOF",
-	IMPORT = "import",
-	MODULE = "module",
-	FN = "fn", 
-	EMUM = "enum", 
-	STRUCT = "struct", 
-	OPEN_PAREN = "(", 
-	CLOSE_PAREN = ")", 
-    OPEN_BRACKET = "[",
-    CLOSE_BRACKET = "]",
-	OPEN_BODY = "{", 
-	CLOSE_BODY = "}", 
-	COMMENT = "//",
-	MULTI_COMMENT_START = "/*",
-	MULTI_COMMENT_END = "*/",
-	SEMICOLON = ";",
-	COLON = ":",
-	OPTIONAL = "!",
-	DOUBLE_QUOTE = "\"",
-	COMMA = ",",
-	PERIOD = ".",
-	QUOTE = "\'",
-	STRING_LIT = "",
-	NUMBER_LIT = "",
-	IDENTIFIER = "" //shouldn't get this unless its none of the above, so this stays empty.
-}
-
-macro bool char[].equals_string(char[] self, String other){
-	if(self.len != other.len) return false;
-	for(int i = 0; i < other.len; i++){
-		if(self[i] != other[i]) return false;
+	else if(self[0].type != type) {
+		return MyResult.T_WRONG_TYPE;
+	}else {
+		return self.pop_first();
 	}
-	return true;
 }
 
-macro bool char[].equals_char(char[] self, char other){
-	if(self.len != 1) return false;
-	return self[0] == other;
-}
+macro String TokenList.parse(&self){
+	String mod;
+	List(<String>) imps;
 
-macro TokenType string_as_token(String value){
-	foreach(TokenType type : TokenType.values){
-		if(  type.value.equals_string(value)) return type;
+	while( !(self.eof()))
+	{
+		Token token = peek();
+		if(token.type == TokenType.IMPORT){
+			next();
+			imps.push(self.parse_identifier());
+		}else if (token.type == TokenType.MODULE){
+			mod = next().value;
+		}else{
+			next();
+		}
 	}
-	return TokenType.IDENTIFIER;
+	return mod;
 }
 
-macro TokenType char_as_token(char value){
-	foreach(TokenType type : TokenType.values){
-		if(  type.value.equals_char(value)) return type;
+macro String TokenList.parse_identifier(&self){
+	String ident = self.next().value;
+	while(self.has_next() && self.peek().TokenType == TokenType.COLON){
+		self.expect(TokenType.COLON);
+		self.expect(TokenType.COLON);
+		Token other = self.expect(TokenType.IDENTIFIER);
+		self = self + "::" + other.value;
 	}
-	return TokenType.IDENTIFIER;
+	return ident;
 }
 
-struct Token{
-	String value;
-	TokenType type;
-	int line;
-}
+// macro String TokenList.parse_args(&self){
+// 	self.expect(TokenType.OPEN_PAREN);
 
-def TokenList = List(<Token>);
+// 	while(self.peek().type != TokenType.CLOSE_PAREN){
 
-macro void TokenList.append_token(&self, String value, TokenType type, int lineNumber){
-	Token token;
-	token.value = value;
-	token.type = type;
-	token.line = lineNumber;
-	self.push(token);
-}
+// 	}
 
-fn void TokenList.dump_tokens(&self, String path){
-	io::File! file = std::io::file::open(path, "w")!!;
-	DString str; 
-	defer str.free();
-	defer file.close()!!;
-	foreach(Token t : self){
-		str.appendf("Line %d -- \tValue: \'%s\' Type: \'%s\'\n", t.line, t.value, t.type.nameof);
-	}
-	file.write(str.str_view())!!;
-}
+// 	self.expect(TokenType.CLOSE_PAREN);
+// 	return "";
+// }
