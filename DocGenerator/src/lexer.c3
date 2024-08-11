@@ -26,8 +26,8 @@ enum TokenType : int (String value){
 	STRUCT = "struct", 
 	OPEN_PAREN = "(", 
 	CLOSE_PAREN = ")", 
-    OPEN_BRACKET = "[",
-    CLOSE_BRACKET = "]",
+    // OPEN_BRACKET = "[",
+    // CLOSE_BRACKET = "]",
 	OPEN_BODY = "{", 
 	BODY = "",
 	CLOSE_BODY = "}", 
@@ -198,8 +198,8 @@ fn TokenList tokenize(String path){
 				dstring.append(current);
 				current =  file[index++];
 			}
-			index++;
-			list.append_token_str(dstring.copy_str()[0..^1], TokenType.COMMENT, lineCount);
+			//index++;
+			list.append_token_str(dstring.copy_str()[0..^2], TokenType.COMMENT, lineCount);
 			lineCount++;
 			dstring.clear();
 			continue;
