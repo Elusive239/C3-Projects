@@ -1,14 +1,18 @@
 DOCGENERATOR
 =======
 
-## Dependencies:
+## Contents
+1. [Imports](#imports)   
+2. [Functions & Macros](#functions--macros)   
+
+## Imports
 libc  
 std::io  
 std::io::file  
 std::core::mem  
 std::collections::list  
 
-## Functions & Macros:
+## Functions & Macros
 ### fn int add (int x, int y)
 ________  
 ### macro void hello ()

@@ -74,11 +74,12 @@ macro String TokenList.parse(&self){
 	mod.convert_ascii_to_upper();
 	DString final; defer final.free();
 	final.appendfn("%s\n=======\n", mod);
-	final.appendfn("## Dependencies:");
+	final.append("## Contents\n1. [Imports](#imports)   \n2. [Functions & Macros](#functions--macros)   \n\n");
+	final.appendfn("## Imports");
 	foreach(String cur : imps){
 		final.appendfn("%s  ", cur);
 	}
-	final.appendfn("\n## Functions & Macros:");
+	final.appendfn("\n## Functions & Macros");
 	foreach(String cur : funcs){
 		final.appendfn("%s  ", cur);
 	}
