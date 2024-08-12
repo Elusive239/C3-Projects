@@ -37,8 +37,8 @@ macro String TokenList.parse(&self){
 	String mod; defer mod.free();
 	List(<String>) imps; defer imps.free();
 	List(<String>) funcs; defer funcs.free();
-	DString str; defer str;
-	DString comment; defer comment;
+	DString str; defer str.free();
+	DString comment; defer comment.free();
 	while( self.has_next())
 	{
 		Token token = self.peek()!!;
@@ -57,17 +57,6 @@ macro String TokenList.parse(&self){
 		else if (token.type == TokenType.FN || token.type == TokenType.MACRO){
 			//fn type func_name (args) [BODY]
 			str.clear();
-			// if(comment.len() != 0){
-			// 	str.append("<details><summary>");
-			// 	str.append(self.parse_func()); 	//funcs tuff
-			// 	str.append("</summary><span>### ");
-			// 	str.append(comment);			//comment
-			// 	str.append("</span></details>");
-			// 	comment.clear();
-			// }else {
-			// 	str.append("### ");
-			// 	str.append(self.parse_func());
-			// }
 			str.append("### ");
 			str.append(self.parse_func());
 			if(comment.len() != 0){
@@ -75,22 +64,17 @@ macro String TokenList.parse(&self){
 				str.append(comment);
 				comment.clear();
 			}
-
+			str.appendf("\n%s", "________");
 			funcs.push(str.copy_str());	//append to funcs
 		}
 		else{
 			self.next();
-		}
-
-		//for functions::
-		//<details>
-		//    <summary>FUNC_NAME_AND_ARGS</summary>
-		//    <span>COMMENT</span>
-		//</details>		
+		}		
 	}
 	mod.convert_ascii_to_upper();
 	DString final; defer final.free();
-	final.appendfn("# %s\n\n## Dependencies:", mod);
+	final.appendfn("%s\n=======\n", mod);
+	final.appendfn("## Dependencies:");
 	foreach(String cur : imps){
 		final.appendfn("%s  ", cur);
 	}
