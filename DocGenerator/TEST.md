@@ -13,9 +13,14 @@ std::core::mem
 std::collections::list  
 
 ## Functions & Macros
-### fn int add (int x, int y)
+### macro void MyStruct.test (&self)  
+This is a test of this kind of functions declaration!
 ________  
-### macro void hello ()
+### fn int add (int x, int y)  
+Adds two numbers
+________  
+### macro void hello ()  
+prints "Hello, world!" to the standard out.
 ________  
 ### fn int main (String[] args)  
 This is the main function. You will never guess what this does!

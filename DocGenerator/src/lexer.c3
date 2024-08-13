@@ -22,7 +22,9 @@ enum TokenType : int (String value){
 	MODULE = "module",
 	FN = "fn", 
 	MACRO = "macro",
-	EMUM = "enum", 
+	CONST = "const",
+	ENUM = "enum", 
+	FAULT = "fault",
 	STRUCT = "struct", 
 	OPEN_PAREN = "(", 
 	CLOSE_PAREN = ")", 
@@ -31,6 +33,7 @@ enum TokenType : int (String value){
 	OPEN_BODY = "{", 
 	BODY = "",
 	CLOSE_BODY = "}", 
+	EQUAL = "=",
 	LAMBDA = "=>",
 	DEFINE = "def",
 	COMMENT = "//",
@@ -111,13 +114,13 @@ fn void TokenList.dump_tokens(&self, String path){
 }
 
 fn TokenList tokenize(String path){
-	String file = read_file(path);
+	String file = read_file(path);defer file.free();
 
 	int lineCount = 1;
 	TokenList list;
-	DString dstring;
-	defer dstring.free();
-	defer file.free();
+	DString dstring;defer dstring.free();
+	
+	
 
 	int index = 0;
 	while(index < file.len){
@@ -143,19 +146,18 @@ fn TokenList tokenize(String path){
 
 		if(type == TokenType.OPEN_BODY){
 			list.append_token_dstr(&dstring, lineCount);
-			// current = file[index++];
 			int depth = 1;
 			while(index < file.len && depth != 0){
+				dstring.append(current);
+				current = file[index++];
 				if(char_as_token(current) == TokenType.OPEN_BODY){
 					depth++;
 				}else if(char_as_token(current) == TokenType.CLOSE_BODY){
 					depth--;
 				}
-
-				dstring.append(current);
-				current = file[index++];
+				
 			}
-			list.append_token_str(dstring.copy_str()[1:^1], TokenType.BODY, lineCount);
+			list.append_token_str(dstring.copy_str().trim()[1:^1].trim("\n\r "), TokenType.BODY, lineCount);
 			dstring.clear();
 			continue;
 		}
@@ -178,10 +180,23 @@ fn TokenList tokenize(String path){
 			continue;
 		}
 
+		if(type == TokenType.EQUAL){
+			if(file[current] != '>'){
+				dstring.clear();
+				while(index < file.len && current != ';'){
+					current = file[index++];
+					dstring.append(current);
+				}
+				list.append_token_str(dstring.copy_str(), TokenType.BODY, lineCount);
+				dstring.clear();
+				continue;
+			}
+		}
+
 
 		type = string_as_token(dstring.str_view());
 
-		if(type == TokenType.LAMBDA){
+		if(type == TokenType.LAMBDA ){
 			dstring.clear();
 			while(index < file.len && current != ';'){
 				current = file[index++];
@@ -199,7 +214,7 @@ fn TokenList tokenize(String path){
 				current =  file[index++];
 			}
 			//index++;
-			list.append_token_str(dstring.copy_str()[0..^2], TokenType.COMMENT, lineCount);
+			list.append_token_str(dstring.copy_str().trim(), TokenType.COMMENT, lineCount);
 			lineCount++;
 			dstring.clear();
 			continue;
@@ -212,12 +227,13 @@ fn TokenList tokenize(String path){
 				current =  file[index++];
 				while(index < file.len && current == '\n'){
 					lineCount++;
+					dstring.append(current);
 					current =  file[index++];
 				}
 			}
 			assert(dstring.str_view().contains(TokenType.MULTI_COMMENT_END.value));
 			String copy = dstring.copy_str();
-			list.append_token_str(copy[0..^2], TokenType.COMMENT, lineCount);
+			list.append_token_str(copy.trim()[0..^3].trim(), TokenType.COMMENT, lineCount);
 			lineCount++;
 			dstring.clear();
 			continue;

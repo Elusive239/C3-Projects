@@ -48,13 +48,11 @@ macro String TokenList.parse(&self){
 		}else if (token.type == TokenType.MODULE){
 			self.next();
 			mod = self.parse_identifier();
-		}
-		else if (token.type == TokenType.COMMENT){
+		}else if (token.type == TokenType.COMMENT){
 			comment.clear();
 			String com = self.next().value;
 			comment.append(com);
-		}
-		else if (token.type == TokenType.FN || token.type == TokenType.MACRO){
+		}else if (token.type == TokenType.FN || token.type == TokenType.MACRO){
 			//fn type func_name (args) [BODY]
 			str.clear();
 			str.append("### ");
@@ -66,8 +64,36 @@ macro String TokenList.parse(&self){
 			}
 			str.appendf("\n%s", "________");
 			funcs.push(str.copy_str());	//append to funcs
-		}
-		else{
+		}else if (token.type == TokenType.CONST){
+            self.next();
+            String variable = self.parse_variable();
+            variable.free(); //well i cant handle this atm so im yeeting it!
+        }else if (token.type == TokenType.IDENTIFIER){
+            String variable = self.parse_variable();
+            variable.free(); //well i cant handle this atm so im yeeting it!
+        }else if (token.type == TokenType.ENUM){
+            self.next();
+            self.next(); //enum name
+            if(self.peek()!!.type == TokenType.COLON){ //handle type + args
+                self.next();
+                self.next(); //enum type
+                if(self.peek()!!.type == TokenType.OPEN_PAREN){
+                    String args = self.parse_args(); //enum args
+                    args.free();
+                }
+            }
+            assert(self.peek()!!.type == TokenType.BODY);
+            self.next();// enum body
+        }else if (token.type == TokenType.FAULT){
+            self.next();
+            self.next(); //fault name
+            assert(self.peek()!!.type == TokenType.BODY);
+            self.next();// fault body
+        }else if (token.type == TokenType.STRUCT){
+            self.next();
+            self.parse_identifier(); //struct name
+            self.next();        //struct body!
+        }else{
 			self.next();
 		}		
 	}
@@ -86,6 +112,16 @@ macro String TokenList.parse(&self){
 	return final.copy_str();
 }
 
+macro String TokenList.parse_variable(&self){
+    DString str; defer str.free();
+    str.appendf("%s %s", self.next().value, self.next().value); //type name
+    if(self.peek()!!.type != TokenType.SEMICOLON){ 
+        str.appendf(" %s %s", self.next().value, self.parse_identifier()); //semicolon OR = ; if equal, is value
+    }
+    str.append(";");
+    return str.copy_str();
+}
+
 macro String TokenList.parse_identifier(&self){
 	DString ident; defer ident.free();
 	ident.append(self.next().value);
@@ -96,12 +132,19 @@ macro String TokenList.parse_identifier(&self){
 		ident.append("::");
 		ident.append(other.value);
 	}
+    if(self.peek()!!.type == TokenType.PERIOD){
+        self.next();
+        ident.appendf(".%s", self.expect(TokenType.IDENTIFIER)!!.value);
+    }
 	return ident.copy_str();
 }
 
 macro String TokenList.parse_args(&self){
 	self.expect(TokenType.OPEN_PAREN)!!;
 	DString dstring; defer dstring.free();
+    if(self.peek()!!.value.equals_string("&self")){
+        dstring.append(self.next().value);
+    }
 	while( self.has_next() && self.peek()!!.type != TokenType.CLOSE_PAREN){
 		if(self.peek()!!.type == TokenType.COMMA) dstring.appendf("%s ",self.next().value);
 		String type = self.parse_identifier();
