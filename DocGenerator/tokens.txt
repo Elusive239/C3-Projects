@@ -37,6 +37,15 @@ Line 6 -- Type: 'COLON'			Value: ':'
 Line 6 -- Type: 'COLON'			Value: ':' 
 Line 6 -- Type: 'IDENTIFIER'			Value: 'list' 
 Line 6 -- Type: 'SEMICOLON'			Value: ';' 
+Line 7 -- Type: 'IMPORT'			Value: 'import' 
+Line 7 -- Type: 'IDENTIFIER'			Value: 'std' 
+Line 7 -- Type: 'COLON'			Value: ':' 
+Line 7 -- Type: 'COLON'			Value: ':' 
+Line 7 -- Type: 'IDENTIFIER'			Value: 'io' 
+Line 7 -- Type: 'COLON'			Value: ':' 
+Line 7 -- Type: 'COLON'			Value: ':' 
+Line 7 -- Type: 'IDENTIFIER'			Value: 'path' 
+Line 7 -- Type: 'SEMICOLON'			Value: ';' 
 Line 8 -- Type: 'IDENTIFIER'			Value: 'int' 
 Line 8 -- Type: 'IDENTIFIER'			Value: 'c' 
 Line 8 -- Type: 'EQUAL'			Value: '=' 
@@ -107,16 +116,23 @@ Line 27 -- Type: 'OPEN_PAREN'			Value: '('
 Line 27 -- Type: 'STRING_LIT'			Value: 'Hello, world!' 
 Line 27 -- Type: 'CLOSE_PAREN'			Value: ')' 
 Line 27 -- Type: 'SEMICOLON'			Value: ';' 
-Line 29 -- Type: 'COMMENT'			Value: 'This is the main function. You will never guess what this does!' 
-Line 30 -- Type: 'FN'			Value: 'fn' 
-Line 30 -- Type: 'IDENTIFIER'			Value: 'int' 
-Line 30 -- Type: 'IDENTIFIER'			Value: 'main' 
-Line 30 -- Type: 'OPEN_PAREN'			Value: '(' 
-Line 30 -- Type: 'IDENTIFIER'			Value: 'String[]' 
-Line 30 -- Type: 'IDENTIFIER'			Value: 'args' 
-Line 30 -- Type: 'CLOSE_PAREN'			Value: ')' 
-Line 31 -- Type: 'BODY'			Value: '	String path = $$FILEPATH;//"main.c3";
-	TokenList list = tokenize(path); defer list.free();
+Line 30 -- Type: 'COMMENT'			Value: 'This is the main function. You will never guess what this does!' 
+Line 31 -- Type: 'FN'			Value: 'fn' 
+Line 31 -- Type: 'IDENTIFIER'			Value: 'int' 
+Line 31 -- Type: 'IDENTIFIER'			Value: 'main' 
+Line 31 -- Type: 'OPEN_PAREN'			Value: '(' 
+Line 31 -- Type: 'IDENTIFIER'			Value: 'String[]' 
+Line 31 -- Type: 'IDENTIFIER'			Value: 'args' 
+Line 31 -- Type: 'CLOSE_PAREN'			Value: ')' 
+Line 32 -- Type: 'BODY'			Value: '	std::io::path::Path! cwd = std::io::path::getcwd();
+	if(catch anyfault f = cwd){
+		io::printn("Unable to get current working directory.");
+		return -1;
+	}
+	DString currentDirPath; defer currentDirPath.free();
+	currentDirPath.appendf("%s\\%s", cwd, "src\\main.c3"); 
+
+	TokenList list = tokenize(currentDirPath.str_view()); defer list.free();
 	list.dump_tokens("tokens.txt");
 	io::printfn("Token Count: %d", list.len());
 	
@@ -130,4 +146,4 @@ Line 31 -- Type: 'BODY'			Value: '	String path = $$FILEPATH;//"main.c3";
 	file.write(output)!!;
 	file.close()!!;
 	return 0;' 
-Line 31 -- Type: 'EOF'			Value: 'EOF' 
+Line 32 -- Type: 'EOF'			Value: 'EOF' 

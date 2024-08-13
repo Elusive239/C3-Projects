@@ -11,6 +11,7 @@ std::io
 std::io::file  
 std::core::mem  
 std::collections::list  
+std::io::path  
 
 ## Functions & Macros
 ### macro void MyStruct.test (&self)  

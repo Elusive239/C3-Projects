@@ -4,7 +4,7 @@ import std::io;
 import std::io::file;
 import std::core::mem;
 import std::collections::list;
-
+import std::io::path;
 int c = 0;
 const int AB = 0132;
 
@@ -31,11 +31,25 @@ fn int add(int x, int y) => x+y;
 //prints "Hello, world!" to the standard out.
 macro void hello() => io::printn("Hello, world!");
 
+
 //This is the main function. You will never guess what this does!
 fn int main(String[] args)
 {
-	String path = $$FILEPATH;//"main.c3";
-	TokenList list = tokenize(path); defer list.free();
+	std::io::path::Path! cwd = std::io::path::getcwd();
+	if(catch anyfault f = cwd){
+		io::printn("Unable to get current working directory.");
+		return -1;
+	}
+	DString currentDirPath; defer currentDirPath.free();
+	//for each arg
+	//1. clear "currentDirPath"
+	//2. append CWD with current arg to "currentDirPath"
+	//3. tokenize / parse
+	//4. create markdown file with current arg[0:^3].md (current arg.md instead of current arg.c3)
+	//5. write parsed tokens to above file, then close it.
+	currentDirPath.appendf("%s\\%s", cwd, "src\\main.c3"); 
+
+	TokenList list = tokenize(currentDirPath.str_view()); defer list.free();
 	list.dump_tokens("tokens.txt");
 	io::printfn("Token Count: %d", list.len());
 	
