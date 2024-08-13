@@ -11,25 +11,32 @@ fault T_Fault
     T_WRONG_TYPE,
 }
 
-macro bool TokenList.has_next(&self) => self.len() > 0;
+int index = 0;
 
-macro bool! TokenList.eof(&self) => !(self.has_next()) ?  T_Fault.T_OVERFLOW? : (self.first()!!.type == TokenType.EOF);
+macro bool TokenList.has_next(&self) => index < self.len();
+// macro bool TokenList.has_next(&self) => self.len() > 0;
 
-macro Token! TokenList.peek(&self, int offset = 0) {
-	if(self.has_next()) return self.get(offset);
+macro bool TokenList.eof(&self) => !(self.has_next()) ?  T_Fault.T_OVERFLOW? : (self.get(index).type == TokenType.EOF);
+
+macro Token! TokenList.peek(&self) {
+	if(self.has_next()) return self.get(index);
 	return T_Fault.T_OVERFLOW?;
 }
 
-macro Token TokenList.next(&self) => self.pop_first()!!;
+// macro Token TokenList.next(&self) => self.pop_first()!!;
+
+macro Token TokenList.next(&self)  {
+	return self.get(index++);
+}
 
 macro Token! TokenList.expect(&self, TokenType type){
 	if(!self.has_next()){
 		return T_Fault.T_OVERFLOW?;
 	}
-	else if(self.first()!!.type != type) {
+	else if(self.get(index).type != type) {
 		return T_Fault.T_WRONG_TYPE?;
 	}else {
-		return self.pop_first()!!;
+		return self.next();
 	}
 }
 
