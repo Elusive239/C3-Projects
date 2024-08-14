@@ -40,3 +40,29 @@ macro String read_file(String path){
 	}
     return read_file;
 }
+
+fn PathList find_by_extension(Path directory, String extension, bool recursive = false){
+	io::printfn("Checking Dir => %s", directory);
+
+	PathList list;
+	PathList currentDirectory = std::io::path::ls(directory)!!; defer currentDirectory.free();
+	DString dstr; defer dstr.free();
+	for (int i = 0; i < currentDirectory.len(); i++){
+		Path currentPath = currentDirectory.get(i);
+		dstr.clear();
+		if (std::io::path::PREFERRED_SEPARATOR == 92) {
+			dstr.appendf("%s\\%s", directory, currentPath);
+		}else {
+			dstr.appendf("%s/%s", directory, currentPath);
+		}
+		if(std::io::path::is_dir(currentPath) && recursive){
+			PathList foundFiles = find_by_extension(std::io::path::new(dstr.copy_str())!!, extension, recursive); defer foundFiles.free();
+			while(foundFiles.len() > 0 ) list.push(foundFiles.pop()!!);
+		}else{
+			String strView = currentPath.path_string;
+			if(strView.len > 3 && strView.contains(".c3"))  list.push(std::io::path::new(dstr.copy_str())!!);
+			currentPath.free();
+		}
+	}
+	return list;
+}

@@ -35,19 +35,30 @@ macro void hello() => io::printn("Hello, world!");
 //This is the main function. You will never guess what this does!
 fn int main(String[] args)
 {
-	std::io::path::Path! cwd = std::io::path::getcwd();
-	if(catch anyfault f = cwd){
-		io::printn("Unable to get current working directory.");
-		return -1;
-	}
-	DString currentDirPath; defer currentDirPath.free();
 	//for each arg
 	//1. clear "currentDirPath"
 	//2. append CWD with current arg to "currentDirPath"
 	//3. tokenize / parse
 	//4. create markdown file with current arg[0:^3].md (current arg.md instead of current arg.c3)
 	//5. write parsed tokens to above file, then close it.
+	std::io::path::Path! cwd = std::io::path::getcwd();
+	if(catch anyfault f = cwd){
+		io::printn("Unable to get current working directory.");
+		return -1;
+	}
+	DString currentDirPath; defer currentDirPath.free();
 	currentDirPath.appendf("%s\\%s", cwd, "src\\main.c3"); 
+	if(!currentDirPath.str_view().contains(".c3")) {
+		io::printfn("File \'%s\' not a c3 file.", currentDirPath.str_view());
+		return -1;
+	}
+
+	PathList path_list = find_by_extension(cwd, ".c3", true);
+	foreach(Path found : path_list){
+		io::printn(found);
+	}
+
+	if(!false) return -1;
 
 	TokenList list = tokenize(currentDirPath.str_view()); defer list.free();
 	list.dump_tokens("tokens.txt");
