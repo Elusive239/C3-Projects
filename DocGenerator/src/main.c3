@@ -5,73 +5,61 @@ import std::io::file;
 import std::core::mem;
 import std::collections::list;
 import std::io::path;
-int c = 0;
-const int AB = 0132;
-
-enum Test : int (String value) {
-	FA = "war"
-}
-
-fault MyFault {
-	FAIL
-}
-
-struct MyStruct {
-	int x;
-}
 
 /*
-This is a test of this kind of functions declaration!
+	for each arg
+	1. clear "currentDirPath"
+	2. append CWD with current arg to "currentDirPath"
+	3. tokenize / parse
+	4. create markdown file with current arg[0:^3].md (current arg.md instead of current arg.c3)
+	5. write parsed tokens to above file, then close it.
 */
-macro void MyStruct.test(&self) => hello();
-
-// Adds two numbers
-fn int add(int x, int y) => x+y;
-
-//prints "Hello, world!" to the standard out.
-macro void hello() => io::printn("Hello, world!");
+fn void to_markdown(Path cwd){
+	PathList path_list = find_by_extension(cwd, ".c3", true, 2);
+	foreach(Path found : path_list){
+		@pool(){
+			io::printfn("Tokenizing \'%s\':", found);
+			TokenList list = tokenize(found.str_view());
+			DString tmp = dstring::temp_with_capacity(found.basename().len + 1);
+			tmp.appendf("%s%s", found.basename()[0:^3], ".txt");
+			list.dump_tokens(tmp.str_view());
+			tmp.clear();
+			tmp.appendf("%s%s",found.basename()[0:^3], ".md");
+			String output = list.parse();
+			io::printfn("Parsing \'%s\':", found);
+			io::printfn("Full List:\n%s", output);
+			File! file = io::file::open(tmp.str_view(), "w");
+			if(catch anyfault f = file){
+				io::printfn("Couldn't open file \'%s\' to output markdown", tmp.str_view());
+				continue;
+			}
+			file.write(output)!!;
+			file.close()!!;
+		};
+	}
+}
 
 
 //This is the main function. You will never guess what this does!
 fn int main(String[] args)
 {
-	//for each arg
-	//1. clear "currentDirPath"
-	//2. append CWD with current arg to "currentDirPath"
-	//3. tokenize / parse
-	//4. create markdown file with current arg[0:^3].md (current arg.md instead of current arg.c3)
-	//5. write parsed tokens to above file, then close it.
-	std::io::path::Path! cwd = std::io::path::getcwd();
-	if(catch anyfault f = cwd){
-		io::printn("Unable to get current working directory.");
-		return -1;
-	}
-	DString currentDirPath; defer currentDirPath.free();
-	currentDirPath.appendf("%s\\%s", cwd, "src\\main.c3"); 
-	if(!currentDirPath.str_view().contains(".c3")) {
-		io::printfn("File \'%s\' not a c3 file.", currentDirPath.str_view());
-		return -1;
-	}
+	path::Path cwd = std::io::path::getcwd()!!;
+	//to_markdown(cwd);
+	//if(!false) return 0;
+	@pool(){
+		TokenList list = tokenize(cwd.tappend("src").tappend("util.c3").str_view())!!;
+		list.dump_tokens("tokens.txt");
+		io::printfn("Token Count: %d", list.len());
 
-	PathList path_list = find_by_extension(cwd, ".c3", true);
-	foreach(Path found : path_list){
-		io::printn(found);
-	}
-
-	if(!false) return -1;
-
-	TokenList list = tokenize(currentDirPath.str_view()); defer list.free();
-	list.dump_tokens("tokens.txt");
-	io::printfn("Token Count: %d", list.len());
-	
-	String output = list.parse(); defer output.free();
-	io::printfn("Full List:\n%s", output);
-	File! file = io::file::open("TEST.md", "w");
-	if(catch anyfault f = file){
-		io::printn("Couldn't open file to output markdown");
-		return -1;
-	}
-	file.write(output)!!;
-	file.close()!!;
+		String output = list.parse();
+		io::printfn("Full List:\n%s", output);
+		File! file = io::file::open("TEST.md", "w");
+		if(catch anyfault f = file){
+			io::printn("Couldn't open file to output markdown");
+			return -1;
+		}
+		file.write(output)!!;
+		file.close()!!;
+	};
 	return 0;
 }

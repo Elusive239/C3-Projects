@@ -25,11 +25,11 @@ macro Token! TokenList.peek(&self) {
 
 // macro Token TokenList.next(&self) => self.pop_first()!!;
 
-macro Token TokenList.next(&self)  {
+fn Token TokenList.next(&self)  {
 	return self.get(index++);
 }
 
-macro Token! TokenList.expect(&self, TokenType type){
+fn Token! TokenList.expect(&self, TokenType type){
 	if(!self.has_next()){
 		return T_Fault.T_OVERFLOW?;
 	}
@@ -40,86 +40,86 @@ macro Token! TokenList.expect(&self, TokenType type){
 	}
 }
 
-macro String TokenList.parse(&self){
-	String mod; defer mod.free();
-	List(<String>) imps; defer imps.free();
-	List(<String>) funcs; defer funcs.free();
-	DString str; defer str.free();
-	DString comment; defer comment.free();
-	while( self.has_next())
-	{
-		Token token = self.peek()!!;
-		if(token.type == TokenType.IMPORT){
-			self.next();
-			imps.push(self.parse_identifier());
-		}else if (token.type == TokenType.MODULE){
-			self.next();
-			mod = self.parse_identifier();
-		}else if (token.type == TokenType.COMMENT){
-			comment.clear();
-			String com = self.next().value;
-			comment.append(com);
-		}else if (token.type == TokenType.FN || token.type == TokenType.MACRO){
-			//fn type func_name (args) [BODY]
-			str.clear();
-			str.append("### ");
-			str.append(self.parse_func());
-			if(comment.len() != 0){
-				str.append("  \n");
-				str.append(comment);
+fn String TokenList.parse(&self){
+	index = 0;
+	DString final;
+	@pool(){
+		String mod;
+		List(<String>) imps;
+		List(<String>) funcs;
+		DString str;
+		DString comment;
+		while( self.has_next())
+		{
+			Token token = self.peek()!!;
+			if(token.type == TokenType.IMPORT){
+				self.next();
+				imps.push(self.parse_identifier());
+			}else if (token.type == TokenType.MODULE){
+				self.next();
+				mod = self.parse_identifier();
+			}else if (token.type == TokenType.COMMENT){
 				comment.clear();
-			}
-			str.appendf("\n%s", "________");
-			funcs.push(str.copy_str());	//append to funcs
-		}else if (token.type == TokenType.CONST){
-            self.next();
-            String variable = self.parse_variable();
-            variable.free(); //well i cant handle this atm so im yeeting it!
-        }else if (token.type == TokenType.IDENTIFIER){
-            String variable = self.parse_variable();
-            variable.free(); //well i cant handle this atm so im yeeting it!
-        }else if (token.type == TokenType.ENUM){
-            self.next();
-            self.next(); //enum name
-            if(self.peek()!!.type == TokenType.COLON){ //handle type + args
-                self.next();
-                self.next(); //enum type
-                if(self.peek()!!.type == TokenType.OPEN_PAREN){
-                    String args = self.parse_args(); //enum args
-                    args.free();
-                }
-            }
-            assert(self.peek()!!.type == TokenType.BODY);
-            self.next();// enum body
-        }else if (token.type == TokenType.FAULT){
-            self.next();
-            self.next(); //fault name
-            assert(self.peek()!!.type == TokenType.BODY);
-            self.next();// fault body
-        }else if (token.type == TokenType.STRUCT){
-            self.next();
-            self.parse_identifier(); //struct name
-            self.next();        //struct body!
-        }else{
-			self.next();
-		}		
-	}
-	mod.convert_ascii_to_upper();
-	DString final; defer final.free();
-	final.appendfn("%s\n=======\n", mod);
-	final.append("## Contents\n1. [Imports](#imports)   \n2. [Functions & Macros](#functions--macros)   \n\n");
-	final.appendfn("## Imports");
-	foreach(String cur : imps){
-		final.appendfn("%s  ", cur);
-	}
-	final.appendfn("\n## Functions & Macros");
-	foreach(String cur : funcs){
-		final.appendfn("%s  ", cur);
-	}
-	return final.copy_str();
+				String com = self.next().value;
+				comment.append(com);
+			}else if (token.type == TokenType.FN || token.type == TokenType.MACRO){
+				//fn type func_name (args) [BODY]
+				str.clear();
+				str.append("### ");
+				str.append(self.parse_func());
+				if(comment.len() != 0){
+					str.append("  \n");
+					str.append(comment);
+					comment.clear();
+				}
+				str.appendf("\n%s", "________");
+				funcs.push(str.copy_str());	//append to funcs
+			}else if (token.type == TokenType.CONST){
+    	        self.next();
+    	        String variable = self.parse_variable(); //well i cant handle this atm so im yeeting it!
+    	    }else if (token.type == TokenType.IDENTIFIER){
+    	        String variable = self.parse_variable(); //well i cant handle this atm so im yeeting it!
+    	    }else if (token.type == TokenType.ENUM){
+    	        self.next();
+    	        self.next(); //enum name
+    	        if(self.peek()!!.type == TokenType.COLON){ //handle type + args
+    	            self.next();
+    	            self.next(); //enum type
+    	            if(self.peek()!!.type == TokenType.OPEN_PAREN){
+    	                String args = self.parse_args(); //enum args
+    	            }
+    	        }
+    	        assert(self.peek()!!.type == TokenType.BODY);
+    	        self.next();// enum body
+    	    }else if (token.type == TokenType.FAULT){
+    	        self.next();	//fault keyword
+    	        self.next(); 	//fault name
+    	        assert(self.peek()!!.type == TokenType.BODY);
+    	        self.next();	// fault body
+    	    }else if (token.type == TokenType.STRUCT){
+    	        self.next();				//struct keyword
+    	        self.parse_identifier();	//struct name
+    	        self.next();        		//struct body!
+    	    }else{
+				self.next();
+			}		
+		}
+		mod.convert_ascii_to_upper();
+		final.appendfn("%s\n=======\n", mod);
+		final.append("## Contents\n1. [Imports](#imports)   \n2. [Functions & Macros](#functions--macros)   \n\n");
+		final.appendfn("## Imports");
+		foreach(String cur : imps){
+			final.appendfn("%s  ", cur);
+		}
+		final.appendfn("\n## Functions & Macros");
+		foreach(String cur : funcs){
+			final.appendfn("%s  ", cur);
+		}
+	};
+	return final.str_view();
 }
 
-macro String TokenList.parse_variable(&self){
+fn String TokenList.parse_variable(&self){
     DString str; defer str.free();
     str.appendf("%s %s", self.next().value, self.next().value); //type name
     if(self.peek()!!.type != TokenType.SEMICOLON){ 
@@ -129,7 +129,7 @@ macro String TokenList.parse_variable(&self){
     return str.copy_str();
 }
 
-macro String TokenList.parse_identifier(&self){
+fn String TokenList.parse_identifier(&self){
 	DString ident; defer ident.free();
 	ident.append(self.next().value);
 	while(self.has_next() && self.peek()!!.type == TokenType.COLON){
@@ -146,7 +146,7 @@ macro String TokenList.parse_identifier(&self){
 	return ident.copy_str();
 }
 
-macro String TokenList.parse_args(&self){
+fn String TokenList.parse_args(&self){
 	self.expect(TokenType.OPEN_PAREN)!!;
 	DString dstring; defer dstring.free();
     if(self.peek()!!.value.equals_string("&self")){
@@ -157,13 +157,16 @@ macro String TokenList.parse_args(&self){
 		String type = self.parse_identifier();
 		String value = self.parse_identifier();
 		dstring.appendf("%s %s", type, value);
+		if(self.peek()!!.type == TokenType.EQUAL){
+			dstring.appendf(" %s %s", self.next().value, self.parse_identifier());
+		}
 	}
 	self.expect(TokenType.CLOSE_PAREN)!!;
 	// self.expect(TokenType.BODY)!!;
 	return dstring.copy_str();
 }
 
-macro String TokenList.parse_func(&self){
+fn String TokenList.parse_func(&self){
 	DString str; defer str.free();
 	str.append(self.next().value);					//fn/macro
 	str.appendf(" %s", self.parse_identifier()); 	//type

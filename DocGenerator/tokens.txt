@@ -46,114 +46,120 @@ Line 7 -- Type: 'COLON'			Value: ':'
 Line 7 -- Type: 'COLON'			Value: ':' 
 Line 7 -- Type: 'IDENTIFIER'			Value: 'path' 
 Line 7 -- Type: 'SEMICOLON'			Value: ';' 
-Line 8 -- Type: 'IDENTIFIER'			Value: 'int' 
-Line 8 -- Type: 'IDENTIFIER'			Value: 'c' 
-Line 8 -- Type: 'EQUAL'			Value: '=' 
-Line 8 -- Type: 'NUMBER_LIT'			Value: '0' 
-Line 9 -- Type: 'CONST'			Value: 'const' 
-Line 9 -- Type: 'IDENTIFIER'			Value: 'int' 
-Line 9 -- Type: 'IDENTIFIER'			Value: 'AB' 
-Line 9 -- Type: 'EQUAL'			Value: '=' 
-Line 9 -- Type: 'NUMBER_LIT'			Value: '0132' 
-Line 11 -- Type: 'ENUM'			Value: 'enum' 
-Line 11 -- Type: 'IDENTIFIER'			Value: 'Test' 
-Line 11 -- Type: 'COLON'			Value: ':' 
-Line 11 -- Type: 'IDENTIFIER'			Value: 'int' 
+Line 9 -- Type: 'MACRO'			Value: 'macro' 
+Line 9 -- Type: 'IDENTIFIER'			Value: 'void' 
+Line 9 -- Type: 'IDENTIFIER'			Value: 'String' 
+Line 9 -- Type: 'PERIOD'			Value: '.' 
+Line 9 -- Type: 'IDENTIFIER'			Value: 'replace' 
+Line 9 -- Type: 'OPEN_PAREN'			Value: '(' 
+Line 9 -- Type: 'IDENTIFIER'			Value: '&self' 
+Line 9 -- Type: 'COMMA'			Value: ',' 
+Line 9 -- Type: 'IDENTIFIER'			Value: 'char' 
+Line 9 -- Type: 'IDENTIFIER'			Value: 'toReplace' 
+Line 9 -- Type: 'COMMA'			Value: ',' 
+Line 9 -- Type: 'IDENTIFIER'			Value: 'char' 
+Line 9 -- Type: 'IDENTIFIER'			Value: 'with' 
+Line 9 -- Type: 'CLOSE_PAREN'			Value: ')' 
+Line 9 -- Type: 'BODY'			Value: '	// io::printn("Replacing...");
+	ZString zstr = self.copy_zstr();
+	for(int i = 0; i < self.len(); i++){
+		if(zstr[i] == toReplace){
+			self.set(i, with);
+		}
+	}
+	// io::printn("Done...");' 
+Line 11 -- Type: 'MACRO'			Value: 'macro' 
+Line 11 -- Type: 'IDENTIFIER'			Value: 'bool' 
+Line 11 -- Type: 'IDENTIFIER'			Value: 'char[]' 
+Line 11 -- Type: 'PERIOD'			Value: '.' 
+Line 11 -- Type: 'IDENTIFIER'			Value: 'equals_string' 
 Line 11 -- Type: 'OPEN_PAREN'			Value: '(' 
+Line 11 -- Type: 'IDENTIFIER'			Value: 'char[]' 
+Line 11 -- Type: 'IDENTIFIER'			Value: 'self' 
+Line 11 -- Type: 'COMMA'			Value: ',' 
 Line 11 -- Type: 'IDENTIFIER'			Value: 'String' 
-Line 11 -- Type: 'IDENTIFIER'			Value: 'value' 
+Line 11 -- Type: 'IDENTIFIER'			Value: 'other' 
 Line 11 -- Type: 'CLOSE_PAREN'			Value: ')' 
-Line 11 -- Type: 'BODY'			Value: '	FA = "war"' 
-Line 13 -- Type: 'FAULT'			Value: 'fault' 
-Line 13 -- Type: 'IDENTIFIER'			Value: 'MyFault' 
-Line 13 -- Type: 'BODY'			Value: '	FAIL' 
-Line 15 -- Type: 'STRUCT'			Value: 'struct' 
-Line 15 -- Type: 'IDENTIFIER'			Value: 'MyStruct' 
-Line 15 -- Type: 'BODY'			Value: '	int x;' 
-Line 19 -- Type: 'COMMENT'			Value: 'This is a test of this kind of functions declaration!' 
-Line 21 -- Type: 'MACRO'			Value: 'macro' 
-Line 21 -- Type: 'IDENTIFIER'			Value: 'void' 
-Line 21 -- Type: 'IDENTIFIER'			Value: 'MyStruct' 
-Line 21 -- Type: 'PERIOD'			Value: '.' 
-Line 21 -- Type: 'IDENTIFIER'			Value: 'test' 
-Line 21 -- Type: 'OPEN_PAREN'			Value: '(' 
-Line 21 -- Type: 'IDENTIFIER'			Value: '&self' 
-Line 21 -- Type: 'CLOSE_PAREN'			Value: ')' 
-Line 21 -- Type: 'EQUAL'			Value: '=' 
-Line 21 -- Type: 'IDENTIFIER'			Value: '>' 
-Line 21 -- Type: 'IDENTIFIER'			Value: 'hello' 
-Line 21 -- Type: 'OPEN_PAREN'			Value: '(' 
-Line 21 -- Type: 'CLOSE_PAREN'			Value: ')' 
-Line 21 -- Type: 'SEMICOLON'			Value: ';' 
-Line 23 -- Type: 'COMMENT'			Value: 'Adds two numbers' 
-Line 24 -- Type: 'FN'			Value: 'fn' 
-Line 24 -- Type: 'IDENTIFIER'			Value: 'int' 
-Line 24 -- Type: 'IDENTIFIER'			Value: 'add' 
-Line 24 -- Type: 'OPEN_PAREN'			Value: '(' 
-Line 24 -- Type: 'IDENTIFIER'			Value: 'int' 
-Line 24 -- Type: 'IDENTIFIER'			Value: 'x' 
-Line 24 -- Type: 'COMMA'			Value: ',' 
-Line 24 -- Type: 'IDENTIFIER'			Value: 'int' 
-Line 24 -- Type: 'IDENTIFIER'			Value: 'y' 
-Line 24 -- Type: 'CLOSE_PAREN'			Value: ')' 
-Line 24 -- Type: 'EQUAL'			Value: '=' 
-Line 24 -- Type: 'IDENTIFIER'			Value: '>' 
-Line 24 -- Type: 'IDENTIFIER'			Value: 'x+y' 
-Line 24 -- Type: 'SEMICOLON'			Value: ';' 
-Line 26 -- Type: 'COMMENT'			Value: 'prints "Hello, world!" to the standard out.' 
-Line 27 -- Type: 'MACRO'			Value: 'macro' 
-Line 27 -- Type: 'IDENTIFIER'			Value: 'void' 
-Line 27 -- Type: 'IDENTIFIER'			Value: 'hello' 
-Line 27 -- Type: 'OPEN_PAREN'			Value: '(' 
-Line 27 -- Type: 'CLOSE_PAREN'			Value: ')' 
-Line 27 -- Type: 'EQUAL'			Value: '=' 
-Line 27 -- Type: 'IDENTIFIER'			Value: '>' 
-Line 27 -- Type: 'IDENTIFIER'			Value: 'io' 
-Line 27 -- Type: 'COLON'			Value: ':' 
-Line 27 -- Type: 'COLON'			Value: ':' 
-Line 27 -- Type: 'IDENTIFIER'			Value: 'printn' 
-Line 27 -- Type: 'OPEN_PAREN'			Value: '(' 
-Line 27 -- Type: 'STRING_LIT'			Value: 'Hello, world!' 
-Line 27 -- Type: 'CLOSE_PAREN'			Value: ')' 
-Line 27 -- Type: 'SEMICOLON'			Value: ';' 
-Line 30 -- Type: 'COMMENT'			Value: 'This is the main function. You will never guess what this does!' 
-Line 31 -- Type: 'FN'			Value: 'fn' 
-Line 31 -- Type: 'IDENTIFIER'			Value: 'int' 
-Line 31 -- Type: 'IDENTIFIER'			Value: 'main' 
-Line 31 -- Type: 'OPEN_PAREN'			Value: '(' 
-Line 31 -- Type: 'IDENTIFIER'			Value: 'String[]' 
-Line 31 -- Type: 'IDENTIFIER'			Value: 'args' 
-Line 31 -- Type: 'CLOSE_PAREN'			Value: ')' 
-Line 32 -- Type: 'BODY'			Value: '	std::io::path::Path! cwd = std::io::path::getcwd();
-	if(catch anyfault f = cwd){
-		io::printn("Unable to get current working directory.");
-		return -1;
+Line 11 -- Type: 'BODY'			Value: '	if(self.len != other.len) return false;
+	for(int i = 0; i < other.len; i++){
+		if(self[i] != other[i]) return false;
 	}
-	DString currentDirPath; defer currentDirPath.free();
-	//for each arg
-	//1. clear "currentDirPath"
-	//2. append CWD with current arg to "currentDirPath"
-	//3. tokenize / parse
-	//4. create markdown file with current arg[0:^3].md (current arg.md instead of current arg.c3)
-	//5. write parsed tokens to above file, then close it.
-	currentDirPath.appendf("%s\\%s", cwd, "src\\main.c3"); 
-	if(!currentDirPath.str_view().contains(".c3")) {
-		io::printfn("File \'%s\' not a c3 file.", currentDirPath.str_view());
-		return -1;
+	return true;' 
+Line 13 -- Type: 'MACRO'			Value: 'macro' 
+Line 13 -- Type: 'IDENTIFIER'			Value: 'bool' 
+Line 13 -- Type: 'IDENTIFIER'			Value: 'char[]' 
+Line 13 -- Type: 'PERIOD'			Value: '.' 
+Line 13 -- Type: 'IDENTIFIER'			Value: 'equals_char' 
+Line 13 -- Type: 'OPEN_PAREN'			Value: '(' 
+Line 13 -- Type: 'IDENTIFIER'			Value: 'char[]' 
+Line 13 -- Type: 'IDENTIFIER'			Value: 'self' 
+Line 13 -- Type: 'COMMA'			Value: ',' 
+Line 13 -- Type: 'IDENTIFIER'			Value: 'char' 
+Line 13 -- Type: 'IDENTIFIER'			Value: 'other' 
+Line 13 -- Type: 'CLOSE_PAREN'			Value: ')' 
+Line 13 -- Type: 'BODY'			Value: '	if(self.len != 1) return false;
+	return self[0] == other;' 
+Line 15 -- Type: 'MACRO'			Value: 'macro' 
+Line 15 -- Type: 'IDENTIFIER'			Value: 'String' 
+Line 15 -- Type: 'IDENTIFIER'			Value: 'read_file' 
+Line 15 -- Type: 'OPEN_PAREN'			Value: '(' 
+Line 15 -- Type: 'IDENTIFIER'			Value: 'String' 
+Line 15 -- Type: 'IDENTIFIER'			Value: 'path' 
+Line 15 -- Type: 'CLOSE_PAREN'			Value: ')' 
+Line 15 -- Type: 'BODY'			Value: 'String! str = ( String) mem::new_array(char, std::io::file::get_size(path));
+	//defer (void)str.free();
+	String! read_file = (String) std::io::file::load_buffer(path, (char[])str);
+	//defer (void) read_file.free();
+	if(catch anyfault f = read_file){
+		return "no file found.";
 	}
-
-	TokenList list = tokenize(currentDirPath.str_view()); defer list.free();
-	list.dump_tokens("tokens.txt");
-	io::printfn("Token Count: %d", list.len());
-	
-	String output = list.parse(); defer output.free();
-	io::printfn("Full List:\n%s", output);
-	File! file = io::file::open("TEST.md", "w");
-	if(catch anyfault f = file){
-		io::printn("Couldn't open file to output markdown");
-		return -1;
-	}
-	file.write(output)!!;
-	file.close()!!;
-	return 0;' 
-Line 32 -- Type: 'EOF'			Value: 'EOF' 
+    return read_file;' 
+Line 17 -- Type: 'FN'			Value: 'fn' 
+Line 17 -- Type: 'IDENTIFIER'			Value: 'void' 
+Line 17 -- Type: 'IDENTIFIER'			Value: 'recursion' 
+Line 17 -- Type: 'OPEN_PAREN'			Value: '(' 
+Line 17 -- Type: 'IDENTIFIER'			Value: 'int' 
+Line 17 -- Type: 'IDENTIFIER'			Value: 'value' 
+Line 17 -- Type: 'EQUAL'			Value: '=' 
+Line 17 -- Type: 'NUMBER_LIT'			Value: '10' 
+Line 17 -- Type: 'BODY'			Value: '	io::printfn("This is a value %d!", value);
+	if(value == 0) return;
+	recursion(value-1);' 
+Line 19 -- Type: 'FN'			Value: 'fn' 
+Line 19 -- Type: 'IDENTIFIER'			Value: 'PathList' 
+Line 19 -- Type: 'IDENTIFIER'			Value: 'find_by_extension' 
+Line 19 -- Type: 'OPEN_PAREN'			Value: '(' 
+Line 19 -- Type: 'IDENTIFIER'			Value: 'Path' 
+Line 19 -- Type: 'IDENTIFIER'			Value: 'directory' 
+Line 19 -- Type: 'COMMA'			Value: ',' 
+Line 19 -- Type: 'IDENTIFIER'			Value: 'String' 
+Line 19 -- Type: 'IDENTIFIER'			Value: 'extension' 
+Line 19 -- Type: 'COMMA'			Value: ',' 
+Line 19 -- Type: 'IDENTIFIER'			Value: 'bool' 
+Line 19 -- Type: 'IDENTIFIER'			Value: 'recursive' 
+Line 19 -- Type: 'EQUAL'			Value: '=' 
+Line 19 -- Type: 'IDENTIFIER'			Value: 'false' 
+Line 19 -- Type: 'COMMA'			Value: ',' 
+Line 19 -- Type: 'IDENTIFIER'			Value: 'int' 
+Line 19 -- Type: 'IDENTIFIER'			Value: 'depth' 
+Line 19 -- Type: 'EQUAL'			Value: '=' 
+Line 19 -- Type: 'NUMBER_LIT'			Value: '10' 
+Line 19 -- Type: 'BODY'			Value: '	PathList list;
+	if(depth <= 0) return list;
+	@pool(){
+		Path cwd = path::getcwd()!!;
+		PathList ls = std::io::path::ls(directory)!!; 
+		path::chdir(directory)!!;
+		foreach(Path currentPath : ls){
+			if(std::io::path::is_dir(currentPath) && recursive){
+				PathList sublist = find_by_extension(currentPath, extension, recursive, depth-1);
+				while(sublist.len() > 0) list.push(directory.append(sublist.pop()!!.str_view())!!);
+			}else if (try ex = currentPath.extension() && ex == "c3") {
+				list.push(directory.append(currentPath.str_view())!!);
+			}
+			currentPath.free();
+		}
+		path::chdir(cwd)!!;
+	};
+	return list;' 
+Line 20 -- Type: 'EOF'			Value: 'EOF' 

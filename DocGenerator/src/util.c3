@@ -6,7 +6,7 @@ import std::core::mem;
 import std::collections::list;
 import std::io::path;
 
-macro void DString.replace(&self, char toReplace, char with){
+macro void String.replace(&self, char toReplace, char with){
 	// io::printn("Replacing...");
 	ZString zstr = self.copy_zstr();
 	for(int i = 0; i < self.len(); i++){
@@ -41,25 +41,29 @@ macro String read_file(String path){
     return read_file;
 }
 
-fn PathList find_by_extension(Path directory, String extension, bool recursive = false){
-	io::printfn("Checking Dir => %s", directory);
+fn void recursion(int value = 10){
+	io::printfn("This is a value %d!", value);
+	if(value == 0) return;
+	recursion(value-1);
+}
 
+fn PathList find_by_extension(Path directory, String extension, bool recursive = false, int depth = 10){
 	PathList list;
-	PathList currentDirectory = std::io::path::ls(directory)!!; defer currentDirectory.free();
-	DString dstr; defer dstr.free();
-	foreach(Path currentPath : currentDirectory){
-		dstr.clear();
-		dstr.appendf( std::io::path::PREFERRED_SEPARATOR == 92 ? "%s\\%s" : "%s/%s", directory, currentPath);
-		
-		if(std::io::path::is_dir(currentPath) && recursive){
-			PathList foundFiles = find_by_extension(std::io::path::new(dstr.str_view())!!, extension, recursive); defer foundFiles.free();
-			while(foundFiles.len() > 0 ) list.push(foundFiles.pop()!!);
-			continue;
+	if(depth <= 0) return list;
+	@pool(){
+		Path cwd = path::getcwd()!!;
+		PathList ls = std::io::path::ls(directory)!!; 
+		path::chdir(directory)!!;
+		foreach(Path currentPath : ls){
+			if(std::io::path::is_dir(currentPath) && recursive){
+				PathList sublist = find_by_extension(currentPath, extension, recursive, depth-1);
+				while(sublist.len() > 0) list.push(directory.append(sublist.pop()!!.str_view())!!);
+			}else if (try ex = currentPath.extension() && ex == "c3") {
+				list.push(directory.append(currentPath.str_view())!!);
+			}
+			currentPath.free();
 		}
-
-		String strView = currentPath.path_string;
-		if(strView.len > 3 && strView.contains(".c3"))  list.push(std::io::path::new(dstr.str_view())!!);
-		currentPath.free();
-	}
+		path::chdir(cwd)!!;
+	};
 	return list;
 }
