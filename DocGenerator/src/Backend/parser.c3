@@ -5,23 +5,21 @@ import std::core::mem;
 import libc;
 import std::collections::list;
 
+macro bool TokenList.has_next(&self, usz offset = 0) => self.index + offset < self.tokens.len();
 
-usz index;
-
-macro bool TokenList.has_next(&self, usz offset = 0) => index + offset < self.len();
-
-macro bool TokenList.eof(&self) => !(self.has_next()) ?  true : (self.get(index).type == TokenType.EOF);
+macro bool TokenList.eof(&self) => !(self.has_next()) ?  true : (self.tokens.get(index).type == TokenType.EOF);
 
 fn Token TokenList.peek(&self, usz offset = 0) {
-	if(self.has_next()) return self.get(index + offset);
+	if(self.has_next()) return self.tokens.get(self.index + offset);
 	Token eof;
 	eof.type = TokenType.EOF;
 	eof.value = "EOF";
 	return eof;
 }
 
+//gets the next function in the TokenList.
 fn Token TokenList.next(&self)  {
-	return self.get(index++);
+	return self.tokens.get(self.index++);
 }
 
 //we want this function to fail if we don't find a token we were expecting!
@@ -31,16 +29,21 @@ fn Token! TokenList.expect(&self, TokenType type){
 	return self.next();
 }
 
+//a parsed set of tokens, with a type indicating 
 struct MDFormat{
 	TokenType type;
 	Token[] tokens;
 	Token comment;
 }
 
+//Markdown formater list, to be used in evaluation of MDFormat objects.
 def MDFormater = List(<MDFormat>);
 
+/*
+	Trys to parse the TokensList into a MDFormater.
+*/
 fn MDFormater TokenList.parse(&self){
-	index = 0;
+	self.index = 0;
 	MDFormater formater;
 	while(self.has_next()){
 		@pool(){
@@ -80,27 +83,27 @@ fn MDFormater TokenList.parse(&self){
 
 fn usz TokenList.find_next(&self, TokenType type){
 	usz current = 1;
-	while(current + index< self.len()){
+	while(current + self.index < self.tokens.len()){
 		if(self.peek(current ).type == type){
 			break;
 		}
 		current++;
 	}
-	assert(current + index < self.len(), "[ERROR] Next type not found! is your .c3 file correct?");
+	assert(current + self.index < self.tokens.len(), "[ERROR] Next type not found! is your .c3 file correct?");
 	return current;
 }
 
 fn Token[] TokenList.next_arr(&self, usz n){
-	usz newIndex = n + index;
-	assert(newIndex < self.len(), "[ERROR] n larger than size of TokenList.");
+	usz newIndex = n + self.index;
+	assert(newIndex < self.tokens.len(), "[ERROR] n larger than size of TokenList.");
 	Token[] arr;
 	@pool(){
-		TokenList tokens;
-		for(usz i = index; i <= newIndex; i++){
-			tokens.push(self.get(i));
+		TokenList lst;
+		for(usz i = self.index; i <= newIndex; i++){
+			lst.tokens.push(self.tokens.get(i));
 		}
-		arr = tokens.to_new_array();
+		arr = lst.tokens.to_new_array();
 	};
-	index = newIndex + 1;
+	self.index =  newIndex + 1;
 	return arr;
 }

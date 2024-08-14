@@ -49,7 +49,7 @@ fn int main(String[] args)
 	@pool(){
 		TokenList list = tokenize(cwd.tappend("src").tappend("util.c3").str_view())!!;
 		list.dump_tokens("tokens.txt");
-		io::printfn("Token Count: %d", list.len());
+		io::printfn("Token Count: %d", list.tokens.len());
 
 		//if(!false) return 0;
 		MDFormater formater = list.parse();

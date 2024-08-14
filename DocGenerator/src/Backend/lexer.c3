@@ -40,6 +40,7 @@ enum TokenType : int (String value){
 	IDENTIFIER = "" //shouldn't get this unless its none of the above, so this stays empty.
 }
 
+//checks if the passed in String is a possible token type, then returns it.
 macro TokenType string_as_token(String value){
 	foreach(TokenType type : TokenType.values){
 		if(  type.value.equals_string(value)) return type;
@@ -47,6 +48,7 @@ macro TokenType string_as_token(String value){
 	return TokenType.IDENTIFIER;
 }
 
+//checks if the passed in char is a possible token type, then returns it.
 macro TokenType char_as_token(char value){
 	foreach(TokenType type : TokenType.values){
 		if(  type.value.equals_char(value)) return type;
@@ -60,14 +62,18 @@ struct Token{
 	int line;
 }
 
-def TokenList = List(<Token>);
+//a list of tokens that also keeps track of the current index (position in parsing)
+struct TokenList {
+	List(<Token>) tokens;
+	usz index;
+}
 
 macro void TokenList.append_token_str(&self, String value, TokenType type, int lineNumber){
 	Token token;
 	token.value = value;
 	token.type = type;
 	token.line = lineNumber;
-	self.push(token);
+	self.tokens.push(token);
 }
 
 macro void TokenList.append_token_dstr(&self, DString* dstring, int lineNumber){
@@ -83,7 +89,7 @@ fn void TokenList.dump_tokens(&self, String path){
 	DString str; 
 	defer str.free();
 	defer file.close()!!;
-	foreach(Token t : self){
+	foreach(Token t : self.tokens){
 		str.appendf("Line %d -- Type: \'%s\'\t\t\tValue: \'%s\' \n", t.line,t.type.nameof, t.value);
 	}
 	file.write(str.str_view())!!;
