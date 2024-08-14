@@ -5,172 +5,102 @@ import std::core::mem;
 import libc;
 import std::collections::list;
 
-fault T_Fault
-{
-	T_OVERFLOW,
-    T_WRONG_TYPE,
+
+usz index;
+
+macro bool TokenList.has_next(&self, usz offset = 0) => index + offset < self.len();
+
+macro bool TokenList.eof(&self) => !(self.has_next()) ?  true : (self.get(index).type == TokenType.EOF);
+
+fn Token TokenList.peek(&self, usz offset = 0) {
+	if(self.has_next()) return self.get(index + offset);
+	Token eof;
+	eof.type = TokenType.EOF;
+	eof.value = "EOF";
+	return eof;
 }
-
-int index = 0;
-
-macro bool TokenList.has_next(&self) => index < self.len();
-// macro bool TokenList.has_next(&self) => self.len() > 0;
-
-macro bool TokenList.eof(&self) => !(self.has_next()) ?  T_Fault.T_OVERFLOW? : (self.get(index).type == TokenType.EOF);
-
-macro Token! TokenList.peek(&self) {
-	if(self.has_next()) return self.get(index);
-	return T_Fault.T_OVERFLOW?;
-}
-
-// macro Token TokenList.next(&self) => self.pop_first()!!;
 
 fn Token TokenList.next(&self)  {
 	return self.get(index++);
 }
 
+//we want this function to fail if we don't find a token we were expecting!
 fn Token! TokenList.expect(&self, TokenType type){
-	if(!self.has_next()){
-		return T_Fault.T_OVERFLOW?;
-	}
-	else if(self.get(index).type != type) {
-		return T_Fault.T_WRONG_TYPE?;
-	}else {
-		return self.next();
-	}
+	assert(self.has_next(), "[ERROR] TokenList out of tokens.");
+	assert(self.peek().type == type, "[ERROR] expected type \'%s\', got \'%s\' ", self.peek().type, type);
+	return self.next();
 }
 
-fn String TokenList.parse(&self){
+struct MDFormat{
+	TokenType type;
+	Token[] tokens;
+	Token comment;
+}
+
+def MDFormater = List(<MDFormat>);
+
+fn MDFormater TokenList.parse(&self){
 	index = 0;
-	DString final;
+	MDFormater formater;
+	while(self.has_next()){
+		@pool(){
+			MDFormat current;
+			if(self.peek().type == TokenType.COMMENT){
+				current.comment = self.next();
+			}
+			switch(self.peek().type){
+				case TokenType.MODULE:
+				case TokenType.IMPORT:
+				case TokenType.IDENTIFIER:
+				case TokenType.DEFINE:
+				case TokenType.CONST:
+					current.type = self.peek().type;
+					current.tokens = self.next_arr(self.find_next(TokenType.SEMICOLON));
+					formater.push(current);
+				case TokenType.FN:
+				case TokenType.MACRO:
+				case TokenType.ENUM:
+				case TokenType.FAULT:
+				case TokenType.STRUCT:
+					current.type = self.peek().type;
+					current.tokens = self.next_arr(self.find_next(TokenType.BODY));
+					formater.push(current);
+				break;
+				case TokenType.EOF: 
+					current.type = TokenType.EOF; 
+					formater.push(current); 
+					self.next();
+					break;
+				default: self.next(); break;
+			}
+		};
+	}
+	return formater;
+}
+
+fn usz TokenList.find_next(&self, TokenType type){
+	usz current = 1;
+	while(current + index< self.len()){
+		if(self.peek(current ).type == type){
+			break;
+		}
+		current++;
+	}
+	assert(current + index < self.len(), "[ERROR] Next type not found! is your .c3 file correct?");
+	return current;
+}
+
+fn Token[] TokenList.next_arr(&self, usz n){
+	usz newIndex = n + index;
+	assert(newIndex < self.len(), "[ERROR] n larger than size of TokenList.");
+	Token[] arr;
 	@pool(){
-		String mod;
-		List(<String>) imps;
-		List(<String>) funcs;
-		DString str;
-		DString comment;
-		while( self.has_next())
-		{
-			Token token = self.peek()!!;
-			if(token.type == TokenType.IMPORT){
-				self.next();
-				imps.push(self.parse_identifier());
-			}else if (token.type == TokenType.MODULE){
-				self.next();
-				mod = self.parse_identifier();
-			}else if (token.type == TokenType.COMMENT){
-				comment.clear();
-				String com = self.next().value;
-				comment.append(com);
-			}else if (token.type == TokenType.FN || token.type == TokenType.MACRO){
-				//fn type func_name (args) [BODY]
-				str.clear();
-				str.append("### ");
-				str.append(self.parse_func());
-				if(comment.len() != 0){
-					str.append("  \n");
-					str.append(comment);
-					comment.clear();
-				}
-				str.appendf("\n%s", "________");
-				funcs.push(str.copy_str());	//append to funcs
-			}else if (token.type == TokenType.CONST){
-    	        self.next();
-    	        String variable = self.parse_variable(); //well i cant handle this atm so im yeeting it!
-    	    }else if (token.type == TokenType.IDENTIFIER){
-    	        String variable = self.parse_variable(); //well i cant handle this atm so im yeeting it!
-    	    }else if (token.type == TokenType.ENUM){
-    	        self.next();
-    	        self.next(); //enum name
-    	        if(self.peek()!!.type == TokenType.COLON){ //handle type + args
-    	            self.next();
-    	            self.next(); //enum type
-    	            if(self.peek()!!.type == TokenType.OPEN_PAREN){
-    	                String args = self.parse_args(); //enum args
-    	            }
-    	        }
-    	        assert(self.peek()!!.type == TokenType.BODY);
-    	        self.next();// enum body
-    	    }else if (token.type == TokenType.FAULT){
-    	        self.next();	//fault keyword
-    	        self.next(); 	//fault name
-    	        assert(self.peek()!!.type == TokenType.BODY);
-    	        self.next();	// fault body
-    	    }else if (token.type == TokenType.STRUCT){
-    	        self.next();				//struct keyword
-    	        self.parse_identifier();	//struct name
-    	        self.next();        		//struct body!
-    	    }else{
-				self.next();
-			}		
+		TokenList tokens;
+		for(usz i = index; i <= newIndex; i++){
+			tokens.push(self.get(i));
 		}
-		mod.convert_ascii_to_upper();
-		final.appendfn("%s\n=======\n", mod);
-		final.append("## Contents\n1. [Imports](#imports)   \n2. [Functions & Macros](#functions--macros)   \n\n");
-		final.appendfn("## Imports");
-		foreach(String cur : imps){
-			final.appendfn("%s  ", cur);
-		}
-		final.appendfn("\n## Functions & Macros");
-		foreach(String cur : funcs){
-			final.appendfn("%s  ", cur);
-		}
+		arr = tokens.to_new_array();
 	};
-	return final.str_view();
+	index = newIndex + 1;
+	return arr;
 }
-
-fn String TokenList.parse_variable(&self){
-    DString str; defer str.free();
-    str.appendf("%s %s", self.next().value, self.next().value); //type name
-    if(self.peek()!!.type != TokenType.SEMICOLON){ 
-        str.appendf(" %s %s", self.next().value, self.parse_identifier()); //semicolon OR = ; if equal, is value
-    }
-    str.append(";");
-    return str.copy_str();
-}
-
-fn String TokenList.parse_identifier(&self){
-	DString ident; defer ident.free();
-	ident.append(self.next().value);
-	while(self.has_next() && self.peek()!!.type == TokenType.COLON){
-		(void)self.expect(TokenType.COLON);
-		(void)self.expect(TokenType.COLON);
-		Token other = self.expect(TokenType.IDENTIFIER)!!;
-		ident.append("::");
-		ident.append(other.value);
-	}
-    if(self.peek()!!.type == TokenType.PERIOD){
-        self.next();
-        ident.appendf(".%s", self.expect(TokenType.IDENTIFIER)!!.value);
-    }
-	return ident.copy_str();
-}
-
-fn String TokenList.parse_args(&self){
-	self.expect(TokenType.OPEN_PAREN)!!;
-	DString dstring; defer dstring.free();
-    if(self.peek()!!.value.equals_string("&self")){
-        dstring.append(self.next().value);
-    }
-	while( self.has_next() && self.peek()!!.type != TokenType.CLOSE_PAREN){
-		if(self.peek()!!.type == TokenType.COMMA) dstring.appendf("%s ",self.next().value);
-		String type = self.parse_identifier();
-		String value = self.parse_identifier();
-		dstring.appendf("%s %s", type, value);
-		if(self.peek()!!.type == TokenType.EQUAL){
-			dstring.appendf(" %s %s", self.next().value, self.parse_identifier());
-		}
-	}
-	self.expect(TokenType.CLOSE_PAREN)!!;
-	// self.expect(TokenType.BODY)!!;
-	return dstring.copy_str();
-}
-
-fn String TokenList.parse_func(&self){
-	DString str; defer str.free();
-	str.append(self.next().value);					//fn/macro
-	str.appendf(" %s", self.parse_identifier()); 	//type
-	str.appendf(" %s", self.parse_identifier());	//func name
-	str.appendf(" (%s)", self.parse_args());   		//args
-	return str.copy_str();
-}		

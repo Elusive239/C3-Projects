@@ -25,16 +25,16 @@ fn void to_markdown(Path cwd){
 			list.dump_tokens(tmp.str_view());
 			tmp.clear();
 			tmp.appendf("%s%s",found.basename()[0:^3], ".md");
-			String output = list.parse();
-			io::printfn("Parsing \'%s\':", found);
-			io::printfn("Full List:\n%s", output);
-			File! file = io::file::open(tmp.str_view(), "w");
-			if(catch anyfault f = file){
-				io::printfn("Couldn't open file \'%s\' to output markdown", tmp.str_view());
-				continue;
-			}
-			file.write(output)!!;
-			file.close()!!;
+			//String output = list.parse();
+			//io::printfn("Parsing \'%s\':", found);
+			//io::printfn("Full List:\n%s", output);
+			//File! file = io::file::open(tmp.str_view(), "w");
+			//if(catch anyfault f = file){
+			//	io::printfn("Couldn't open file \'%s\' to output markdown", tmp.str_view());
+			//	continue;
+			//}
+			//file.write(output)!!;
+			//file.close()!!;
 		};
 	}
 }
@@ -51,15 +51,25 @@ fn int main(String[] args)
 		list.dump_tokens("tokens.txt");
 		io::printfn("Token Count: %d", list.len());
 
-		String output = list.parse();
-		io::printfn("Full List:\n%s", output);
-		File! file = io::file::open("TEST.md", "w");
-		if(catch anyfault f = file){
-			io::printn("Couldn't open file to output markdown");
-			return -1;
-		}
-		file.write(output)!!;
-		file.close()!!;
+		//if(!false) return 0;
+		MDFormater formater = list.parse();
+		//print formater!
+		//for(int i = 0; i < formater.len(); i++){
+		//	io::printfn("OUTPUT:\n %s ", formater.get(i).tokens);
+		//	foreach(Token token : formater.get(i).tokens ){
+		//		io::printfn("Token => %s ", token.value);
+		//	}
+		//}
+
+		//String output = list.parse();
+		//io::printfn("Full List:\n%s", output);
+		//File! file = io::file::open("TEST.md", "w");
+		//if(catch anyfault f = file){
+		//	io::printn("Couldn't open file to output markdown");
+		//	return -1;
+		//}
+		//file.write(output)!!;
+		//file.close()!!;
 	};
 	return 0;
 }
