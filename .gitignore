@@ -7,3 +7,9 @@ MineSweeper/main.lib
 MineSweeper/main.pdb
 MineSweeper/main.zip
 DocGenerator/util.txt
+DocGenerator/evaluator.md
+DocGenerator/lexer.md
+DocGenerator/main.md
+DocGenerator/markdown.md
+DocGenerator/parser.md
+DocGenerator/util.md

@@ -14,29 +14,27 @@ import std::io::path;
 	4. create markdown file with current arg[0:^3].md (current arg.md instead of current arg.c3)
 	5. write parsed tokens to above file, then close it.
 */
-fn void to_markdown(Path cwd){
-	PathList path_list = find_by_extension(cwd, ".c3", true, 2);
-	foreach(Path found : path_list){
-		@pool(){
-			io::printfn("Tokenizing \'%s\':", found);
+fn int to_markdown(Path cwd){
+	@pool(){
+		PathList path_list = find_by_extension(cwd, ".c3", true);
+		foreach(Path found : path_list){
 			TokenList list = tokenize(found.str_view());
-			DString tmp = dstring::temp_with_capacity(found.basename().len + 1);
-			tmp.appendf("%s%s", found.basename()[0:^3], ".txt");
-			list.dump_tokens(tmp.str_view());
-			tmp.clear();
-			tmp.appendf("%s%s",found.basename()[0:^3], ".md");
-			//String output = list.parse();
-			//io::printfn("Parsing \'%s\':", found);
-			//io::printfn("Full List:\n%s", output);
-			//File! file = io::file::open(tmp.str_view(), "w");
-			//if(catch anyfault f = file){
-			//	io::printfn("Couldn't open file \'%s\' to output markdown", tmp.str_view());
-			//	continue;
-			//}
-			//file.write(output)!!;
-			//file.close()!!;
-		};
-	}
+			MDFormater formater = list.parse();
+
+			String output = formater.evaluate_format();
+			DString fpath;
+			fpath.append(found.basename()[0:^3]);
+			fpath.append(".md");
+			File! file = io::file::open(fpath.str_view(), "w");
+			if(catch anyfault f = file){
+				io::printn("Couldn't open file to output markdown");
+				return -1;
+			}
+			file.write(output)!!;
+			file.close()!!;
+		}
+	};
+	return 0;
 }
 
 
@@ -44,32 +42,23 @@ fn void to_markdown(Path cwd){
 fn int main(String[] args)
 {
 	path::Path cwd = std::io::path::getcwd()!!;
-	//to_markdown(cwd);
-	//if(!false) return 0;
+	to_markdown(cwd);
+	if(!false) return 0;
 	@pool(){
 		TokenList list = tokenize(cwd.tappend("src").tappend("util.c3").str_view())!!;
 		list.dump_tokens("tokens.txt");
 		io::printfn("Token Count: %d", list.tokens.len());
 
-		//if(!false) return 0;
 		MDFormater formater = list.parse();
-		//print formater!
-		//for(int i = 0; i < formater.len(); i++){
-		//	io::printfn("OUTPUT:\n %s ", formater.get(i).tokens);
-		//	foreach(Token token : formater.get(i).tokens ){
-		//		io::printfn("Token => %s ", token.value);
-		//	}
-		//}
-
-		//String output = list.parse();
-		//io::printfn("Full List:\n%s", output);
-		//File! file = io::file::open("TEST.md", "w");
-		//if(catch anyfault f = file){
-		//	io::printn("Couldn't open file to output markdown");
-		//	return -1;
-		//}
-		//file.write(output)!!;
-		//file.close()!!;
+	
+		String output = formater.evaluate_format();
+		File! file = io::file::open("TEST.md", "w");
+		if(catch anyfault f = file){
+			io::printn("Couldn't open file to output markdown");
+			return -1;
+		}
+		file.write(output)!!;
+		file.close()!!;
 	};
 	return 0;
 }

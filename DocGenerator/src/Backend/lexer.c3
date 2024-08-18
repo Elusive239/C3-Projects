@@ -9,7 +9,7 @@ enum TokenType : int (String value){
 	EOF = "EOF",
 	IMPORT = "import",
 	MODULE = "module",
-	FN = "fn", 
+	FUNCTION = "fn", 
 	MACRO = "macro",
 	CONST = "const",
 	ENUM = "enum", 

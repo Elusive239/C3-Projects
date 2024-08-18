@@ -7,32 +7,99 @@ import std::collections::list;
 import std::sort;
 
 
-fn int get_type_priority(TokenType type){
+fn usz get_type_priority(TokenType type){
 	switch(type){
 		case TokenType.MODULE: return 0;
 		case TokenType.IMPORT: return 1;
+		case TokenType.DEFINE:return 2;
 		case TokenType.IDENTIFIER: return 3;
-		case TokenType.DEFINE:return 5;
 		case TokenType.CONST: return 4;
-		case TokenType.FN: return 6;
-		case TokenType.MACRO: return 7;
-		case TokenType.ENUM: return 9;
-		case TokenType.FAULT: return 10;
-		case TokenType.STRUCT: return 11;
+		case TokenType.STRUCT: return 5;
+		case TokenType.ENUM: return 6;
+		case TokenType.FAULT: return 7;
+		case TokenType.FUNCTION: return 8;
+		case TokenType.MACRO: return 9;
+		
 		default: return -1;
 	}
 }
 
-macro int compare_to(MDFormat a, MDFormat b){
-	int af = get_type_priority(a.type);
-	int bf = get_type_priority(b.type);
-	if(af == bf) return 0;
-	return af < bf ? -1 :  1;
+fn void MDFormater.insertion_sort(&self){
+	for(usz i = 0; i < self.len(); i++){
+		for(usz y = i + 1; y < self.len(); y++){
+			usz priorityA = get_type_priority(self.get(i).type);
+			usz priorityB = get_type_priority(self.get(y).type);
+			if(priorityB < priorityA){
+				self.swap(i, y);
+			}
+		}
+	}
+}
+
+fn String[] valid_types_as_string_array(){
+	TokenType[] types = {TokenType.MODULE, TokenType.IMPORT, TokenType.DEFINE, TokenType.IDENTIFIER, TokenType.CONST, TokenType.STRUCT, TokenType.ENUM, TokenType.FAULT, TokenType.FUNCTION, TokenType.MACRO};
+	String[] arr = mem::alloc_array(String, types.len);
+	@pool(){
+		foreach(index, type : types){
+			arr[index] = type.nameof.copy();
+			arr[index].convert_ascii_to_lower();
+			arr[index][0] =  arr[index][0].to_upper();
+			
+		}
+	};
+	return arr;
+}
+
+fn void change_state(DString* file, TokenType current){
+	switch(current){
+		case TokenType.MODULE: file.new_line().h2("Contents").numbered_list(valid_types_as_string_array()).new_line().h2("Imports");
+		default: 
+
+		usz state = get_type_priority(current);
+		if(state > 10) return;
+
+		file.h2(valid_types_as_string_array()[state]);
+
+	}
 }
 
 fn String MDFormater.evaluate_format( &self){
-	io::printfn("what we got: %s ", self.first()!!);
-	quicksort(self, (MDFormat a, MDFormat b) => compare_to(a, b));
-	io::printfn("what we got post sort: %s ", self.first()!!);
-	return "";
+	self.insertion_sort();
+	DString file;
+	@pool(){
+		usz state = 0;
+		foreach(MDFormat current : self){
+			usz currentState = get_type_priority(current.type);
+
+			if(state != currentState){
+				state = currentState;
+				change_state(&file, current.type);
+			}
+
+			switch(current.type){
+				case TokenType.MODULE:
+					current.tokens[1].value.convert_ascii_to_upper();
+					file.underline1(current.tokens[1].value);
+				case TokenType.IMPORT:
+					//append import
+					file.append("### ");
+					for(int i = 1; i < current.tokens.len-1; i++){
+						file.appendf( "%s", current.tokens[i].value);
+					}
+					file.new_line();
+				default:
+					file.append("### ");
+					usz index = 0;
+					while(index < current.tokens.len -1){
+						file.appendf("%s ", current.tokens[index++].value);
+					}
+					file.new_line();
+				//default: break;
+			}
+			//file.new_line();
+			file.comment(current.comment.value);
+		}
+		io::printn(file);
+	};
+	return file.str_view();
 }

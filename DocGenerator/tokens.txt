@@ -60,15 +60,15 @@ Line 9 -- Type: 'COMMA'			Value: ','
 Line 9 -- Type: 'IDENTIFIER'			Value: 'char' 
 Line 9 -- Type: 'IDENTIFIER'			Value: 'with' 
 Line 9 -- Type: 'CLOSE_PAREN'			Value: ')' 
-Line 9 -- Type: 'BODY'			Value: '	// io::printn("Replacing...");
-	ZString zstr = self.copy_zstr();
-	for(int i = 0; i < self.len(); i++){
-		if(zstr[i] == toReplace){
-			self.set(i, with);
+Line 9 -- Type: 'BODY'			Value: '	@pool(){
+		ZString zstr = self.copy_zstr();
+		for(int i = 0; i < self.len(); i++){
+			if(zstr[i] == toReplace){
+				self.set(i, with);
+			}
 		}
-	}
-	// io::printn("Done...");' 
-Line 11 -- Type: 'MACRO'			Value: 'macro' 
+	};' 
+Line 11 -- Type: 'FUNCTION'			Value: 'fn' 
 Line 11 -- Type: 'IDENTIFIER'			Value: 'bool' 
 Line 11 -- Type: 'IDENTIFIER'			Value: 'char[]' 
 Line 11 -- Type: 'PERIOD'			Value: '.' 
@@ -85,7 +85,7 @@ Line 11 -- Type: 'BODY'			Value: '	if(self.len != other.len) return false;
 		if(self[i] != other[i]) return false;
 	}
 	return true;' 
-Line 13 -- Type: 'MACRO'			Value: 'macro' 
+Line 13 -- Type: 'FUNCTION'			Value: 'fn' 
 Line 13 -- Type: 'IDENTIFIER'			Value: 'bool' 
 Line 13 -- Type: 'IDENTIFIER'			Value: 'char[]' 
 Line 13 -- Type: 'PERIOD'			Value: '.' 
@@ -99,22 +99,20 @@ Line 13 -- Type: 'IDENTIFIER'			Value: 'other'
 Line 13 -- Type: 'CLOSE_PAREN'			Value: ')' 
 Line 13 -- Type: 'BODY'			Value: '	if(self.len != 1) return false;
 	return self[0] == other;' 
-Line 15 -- Type: 'MACRO'			Value: 'macro' 
+Line 15 -- Type: 'FUNCTION'			Value: 'fn' 
 Line 15 -- Type: 'IDENTIFIER'			Value: 'String' 
 Line 15 -- Type: 'IDENTIFIER'			Value: 'read_file' 
 Line 15 -- Type: 'OPEN_PAREN'			Value: '(' 
 Line 15 -- Type: 'IDENTIFIER'			Value: 'String' 
 Line 15 -- Type: 'IDENTIFIER'			Value: 'path' 
 Line 15 -- Type: 'CLOSE_PAREN'			Value: ')' 
-Line 15 -- Type: 'BODY'			Value: 'String! str = ( String) mem::new_array(char, std::io::file::get_size(path));
-	//defer (void)str.free();
-	String! read_file = (String) std::io::file::load_buffer(path, (char[])str);
-	//defer (void) read_file.free();
-	if(catch anyfault f = read_file){
-		return "no file found.";
-	}
+Line 15 -- Type: 'BODY'			Value: '	String read_file;
+	@pool(){
+    	String! str = ( String) mem::new_array(char, std::io::file::get_size(path));
+		read_file = (String) std::io::file::load_buffer(path, (char[])str)!!;
+	};
     return read_file;' 
-Line 17 -- Type: 'FN'			Value: 'fn' 
+Line 17 -- Type: 'FUNCTION'			Value: 'fn' 
 Line 17 -- Type: 'IDENTIFIER'			Value: 'void' 
 Line 17 -- Type: 'IDENTIFIER'			Value: 'recursion' 
 Line 17 -- Type: 'OPEN_PAREN'			Value: '(' 
@@ -125,7 +123,7 @@ Line 17 -- Type: 'NUMBER_LIT'			Value: '10'
 Line 17 -- Type: 'BODY'			Value: '	io::printfn("This is a value %d!", value);
 	if(value == 0) return;
 	recursion(value-1);' 
-Line 19 -- Type: 'FN'			Value: 'fn' 
+Line 19 -- Type: 'FUNCTION'			Value: 'fn' 
 Line 19 -- Type: 'IDENTIFIER'			Value: 'PathList' 
 Line 19 -- Type: 'IDENTIFIER'			Value: 'find_by_extension' 
 Line 19 -- Type: 'OPEN_PAREN'			Value: '(' 

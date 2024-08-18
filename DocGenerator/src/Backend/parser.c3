@@ -60,11 +60,11 @@ fn MDFormater TokenList.parse(&self){
 					current.type = self.peek().type;
 					current.tokens = self.next_arr(self.find_next(TokenType.SEMICOLON));
 					formater.push(current);
-				case TokenType.FN:
-				case TokenType.MACRO:
 				case TokenType.ENUM:
 				case TokenType.FAULT:
 				case TokenType.STRUCT:
+				case TokenType.FUNCTION:
+				case TokenType.MACRO:
 					current.type = self.peek().type;
 					current.tokens = self.next_arr(self.find_next(TokenType.BODY));
 					formater.push(current);
