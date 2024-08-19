@@ -36,8 +36,8 @@ fn void MDFormater.insertion_sort(&self){
 	}
 }
 
-fn String[] valid_types_as_string_array(){
-	TokenType[] types = {TokenType.MODULE, TokenType.IMPORT, TokenType.DEFINE, TokenType.IDENTIFIER, TokenType.CONST, TokenType.STRUCT, TokenType.ENUM, TokenType.FAULT, TokenType.FUNCTION, TokenType.MACRO};
+fn String[] valid_types_as_string_array(TokenType[] types){
+	//TokenType[] types = {TokenType.MODULE, TokenType.IMPORT, TokenType.DEFINE, TokenType.IDENTIFIER, TokenType.CONST, TokenType.STRUCT, TokenType.ENUM, TokenType.FAULT, TokenType.FUNCTION, TokenType.MACRO};
 	String[] arr = mem::alloc_array(String, types.len);
 	@pool(){
 		foreach(index, type : types){
@@ -50,28 +50,35 @@ fn String[] valid_types_as_string_array(){
 	return arr;
 }
 
-fn void change_state(DString* file, TokenType current){
+fn void MDFormater.change_state(&self, DString* file, TokenType current){
 	@pool(){
+		TokenType[] types = {TokenType.IMPORT, TokenType.DEFINE, TokenType.IDENTIFIER, TokenType.CONST, TokenType.STRUCT, TokenType.ENUM, TokenType.FAULT, TokenType.FUNCTION, TokenType.MACRO};
+		List(<TokenType>) found_types;
+		found_types.temp_init();
+		foreach(MDFormat format : self){
+			if(format.type != TokenType.EOF && format.type != TokenType.MODULE) if(!found_types.contains(format.type)){
+				found_types.push(format.type);
+			}
+		}
+		
 		switch(current){
 			case TokenType.MODULE: 
 			file.new_line().h2("Contents");
-			String[] arr = valid_types_as_string_array()[1..9];
+			
+			String[] arr = valid_types_as_string_array(found_types.array_view());
 			foreach(index, String s : arr){
-				//s[0] =  s[0].to_lower();
 				DString dstr;
 				dstr.appendf("[%ss](#%ss)", s, s);
 				arr[index] = dstr.copy_str();
-				//arr[index] ="[".concat(arr[index]).concat("]").concat( "(").concat("#".concat(s).concat("s")).concat(")");
-				//[%ss](#%s)
 			}
 			file.numbered_list(arr);
 			file.new_line();
 			default: 
 
-			usz state = get_type_priority(current);
-			if(state > 10) return;
+			usz state = get_type_priority(current) ;
+			if(state > types.len ) return;
 
-			file.h2(valid_types_as_string_array()[state].tconcat("s"));
+			file.h2(valid_types_as_string_array(types)[state-1].tconcat("s"));
 
 		}
 	};
@@ -92,7 +99,7 @@ fn String MDFormater.evaluate_format( &self){
 
 			if(state != currentState){
 				state = currentState;
-				change_state(&file, current.type);
+				self.change_state(&file, current.type);
 			}
 
 			switch(current.type){
