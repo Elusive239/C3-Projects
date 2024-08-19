@@ -99,7 +99,7 @@ fn String MDFormater.evaluate_format( &self){
 			//file.new_line();
 			file.comment(current.comment.value);
 		}
-		io::printn(file);
+		//io::printn(file);
 	};
 	return file.str_view();
 }
