@@ -55,14 +55,14 @@ macro DString* DString.underline3(&self, String s = " "){
 
 macro DString* DString.numbered_list(&self, String[] s){
     foreach(index, String str : s){
-	    self.appendfn("%d. [%ss](#%s)", index+1, str, str);
+	    self.appendfn("%d. %s", index+1, str, str);
 	}
     return self;
 }
 
 macro DString* DString.dashed_list(&self, String[] s){
     foreach(String str : s){
-	    self.appendfn("- [%ss](#%s)", str, str);
+	    self.appendfn("- %s", str, str);
 	}
     return self;
 }

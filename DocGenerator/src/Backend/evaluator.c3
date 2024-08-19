@@ -51,23 +51,42 @@ fn String[] valid_types_as_string_array(){
 }
 
 fn void change_state(DString* file, TokenType current){
-	switch(current){
-		case TokenType.MODULE: file.new_line().h2("Contents").numbered_list(valid_types_as_string_array()).new_line().h2("Imports");
-		default: 
+	@pool(){
+		switch(current){
+			case TokenType.MODULE: 
+			file.new_line().h2("Contents");
+			String[] arr = valid_types_as_string_array()[1..9];
+			foreach(index, String s : arr){
+				//s[0] =  s[0].to_lower();
+				DString dstr;
+				dstr.appendf("[%ss](#%ss)", s, s);
+				arr[index] = dstr.copy_str();
+				//arr[index] ="[".concat(arr[index]).concat("]").concat( "(").concat("#".concat(s).concat("s")).concat(")");
+				//[%ss](#%s)
+			}
+			file.numbered_list(arr);
+			file.new_line();
+			default: 
 
-		usz state = get_type_priority(current);
-		if(state > 10) return;
+			usz state = get_type_priority(current);
+			if(state > 10) return;
 
-		file.h2(valid_types_as_string_array()[state]);
+			file.h2(valid_types_as_string_array()[state].tconcat("s"));
 
-	}
+		}
+	};
 }
 
 fn String MDFormater.evaluate_format( &self){
 	self.insertion_sort();
 	DString file;
 	@pool(){
-		usz state = 0;
+		usz state = -1;
+		if(self.first()!!.type == TokenType.MODULE){
+			self.first()!!.tokens[1].value.convert_ascii_to_upper();
+			file.underline1(self.first()!!.tokens[1].value);
+		}
+		
 		foreach(MDFormat current : self){
 			usz currentState = get_type_priority(current.type);
 
@@ -78,11 +97,10 @@ fn String MDFormater.evaluate_format( &self){
 
 			switch(current.type){
 				case TokenType.MODULE:
-					current.tokens[1].value.convert_ascii_to_upper();
-					file.underline1(current.tokens[1].value);
+					continue;
 				case TokenType.IMPORT:
 					//append import
-					file.append("### ");
+					// file.append("### ");
 					for(int i = 1; i < current.tokens.len-1; i++){
 						file.appendf( "%s", current.tokens[i].value);
 					}

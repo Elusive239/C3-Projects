@@ -33,7 +33,7 @@ enum TokenType : int (String value){
 	OPTIONAL = "!",
 	DOUBLE_QUOTE = "\"",
 	COMMA = ",",
-	PERIOD = ".",
+	//PERIOD = ".",
 	QUOTE = "\'",
 	STRING_LIT = "",
 	NUMBER_LIT = "",

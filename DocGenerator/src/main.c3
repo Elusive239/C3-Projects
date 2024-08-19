@@ -21,7 +21,7 @@ fn String to_markdown(Path path){
 	};
 }
 
-fn void mk_required_dirs(Path cwd, Path current, usz depth = 20){
+fn void mk_required_dirs(Path cwd, Path current, usz depth = 20 ) {
 	if(cwd.equals(current) || depth == 0) return;
 	mk_required_dirs(cwd, current.parent()!!, depth-1);
 	if(path::is_file(current)) return;
@@ -53,7 +53,6 @@ fn int generate_doc(Path cwd, String project_name = ""){
 		PathList path_list = find_by_extension(cwd, ".c3", true);
 		foreach(Path found : path_list){
 			mk_required_dirs(cwd, found);
-			io::printfn("%s => %s", found, found.dirname());
 			String output = to_markdown(found);
 			File! file = io::file::open(found.basename()[0:^3].tconcat(".md"), "w");
 			if(catch anyfault f = file){

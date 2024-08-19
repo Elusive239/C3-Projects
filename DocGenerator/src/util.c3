@@ -17,7 +17,7 @@ macro void String.replace(&self, char toReplace, char with){
 	};
 }
 
-fn bool char[].equals_string(char[] self, String other){
+fn bool char[].equals_string(char[] self, String other ) {
 	if(self.len != other.len) return false;
 	for(int i = 0; i < other.len; i++){
 		if(self[i] != other[i]) return false;
@@ -30,7 +30,7 @@ fn bool char[].equals_char(char[] self, char other){
 	return self[0] == other;
 }
 
-fn String read_file(String path){
+fn String read_file(String path ) {
 	String read_file;
 	@pool(){
     	String! str = ( String) mem::new_array(char, std::io::file::get_size(path));
@@ -39,13 +39,7 @@ fn String read_file(String path){
     return read_file;
 }
 
-fn void recursion(int value = 10){
-	io::printfn("This is a value %d!", value);
-	if(value == 0) return;
-	recursion(value-1);
-}
-
-fn PathList find_by_extension(Path directory, String extension, bool recursive = false, int depth = 10){
+fn PathList find_by_extension(Path directory, String extension, bool recursive = false, int depth = 10 ) {
 	PathList list;
 	if(depth <= 0) return list;
 	@pool(){
