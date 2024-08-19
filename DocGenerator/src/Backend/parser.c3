@@ -5,11 +5,11 @@ import std::core::mem;
 import libc;
 import std::collections::list;
 
-macro bool TokenList.has_next(&self, usz offset = 0) => self.index + offset < self.tokens.len();
+macro bool TokenList.has_next (&self, usz offset = 0) => self.index + offset < self.tokens.len();
 
-macro bool TokenList.eof(&self) => !(self.has_next()) ?  true : (self.tokens.get(index).type == TokenType.EOF);
+macro bool TokenList.eof (&self) => !(self.has_next()) ?  true : (self.tokens.get(index).type == TokenType.EOF);
 
-fn Token TokenList.peek(&self, usz offset = 0) {
+fn Token TokenList.peek (&self, usz offset = 0) {
 	if(self.has_next()) return self.tokens.get(self.index + offset);
 	Token eof;
 	eof.type = TokenType.EOF;
@@ -18,12 +18,12 @@ fn Token TokenList.peek(&self, usz offset = 0) {
 }
 
 //gets the next function in the TokenList.
-fn Token TokenList.next(&self)  {
+fn Token TokenList.next (&self)  {
 	return self.tokens.get(self.index++);
 }
 
 //we want this function to fail if we don't find a token we were expecting!
-fn Token! TokenList.expect(&self, TokenType type){
+fn Token! TokenList.expect (&self, TokenType type) {
 	assert(self.has_next(), "[ERROR] TokenList out of tokens.");
 	assert(self.peek().type == type, "[ERROR] expected type \'%s\', got \'%s\' ", self.peek().type, type);
 	return self.next();
@@ -42,7 +42,7 @@ def MDFormater = List(<MDFormat>);
 /*
 	Trys to parse the TokensList into a MDFormater.
 */
-fn MDFormater TokenList.parse(&self){
+fn MDFormater TokenList.parse (&self) {
 	self.index = 0;
 	MDFormater formater;
 	while(self.has_next()){
@@ -81,7 +81,7 @@ fn MDFormater TokenList.parse(&self){
 	return formater;
 }
 
-fn usz TokenList.find_next(&self, TokenType type){
+fn usz TokenList.find_next (&self, TokenType type) {
 	usz current = 1;
 	while(current + self.index < self.tokens.len()){
 		if(self.peek(current ).type == type){
@@ -93,7 +93,7 @@ fn usz TokenList.find_next(&self, TokenType type){
 	return current;
 }
 
-fn Token[] TokenList.next_arr(&self, usz n){
+fn Token[] TokenList.next_arr (&self, usz n) {
 	usz newIndex = n + self.index;
 	assert(newIndex < self.tokens.len(), "[ERROR] n larger than size of TokenList.");
 	Token[] arr;

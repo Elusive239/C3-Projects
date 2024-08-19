@@ -7,7 +7,7 @@ import std::collections::list;
 import std::sort;
 
 
-fn usz get_type_priority(TokenType type){
+fn usz get_type_priority (TokenType type) {
 	switch(type){
 		case TokenType.MODULE: return 0;
 		case TokenType.IMPORT: return 1;
@@ -24,7 +24,7 @@ fn usz get_type_priority(TokenType type){
 	}
 }
 
-fn void MDFormater.insertion_sort(&self){
+fn void MDFormater.insertion_sort (&self) {
 	for(usz i = 0; i < self.len(); i++){
 		for(usz y = i + 1; y < self.len(); y++){
 			usz priorityA = get_type_priority(self.get(i).type);
@@ -36,7 +36,7 @@ fn void MDFormater.insertion_sort(&self){
 	}
 }
 
-fn String[] valid_types_as_string_array(TokenType[] types){
+fn String[] valid_types_as_string_array (TokenType[] types) {
 	//TokenType[] types = {TokenType.MODULE, TokenType.IMPORT, TokenType.DEFINE, TokenType.IDENTIFIER, TokenType.CONST, TokenType.STRUCT, TokenType.ENUM, TokenType.FAULT, TokenType.FUNCTION, TokenType.MACRO};
 	String[] arr = mem::alloc_array(String, types.len);
 	@pool(){
@@ -50,7 +50,7 @@ fn String[] valid_types_as_string_array(TokenType[] types){
 	return arr;
 }
 
-fn void MDFormater.change_state(&self, DString* file, TokenType current){
+fn void MDFormater.change_state (&self, DString* file, TokenType current) {
 	@pool(){
 		TokenType[] types = {TokenType.IMPORT, TokenType.DEFINE, TokenType.IDENTIFIER, TokenType.CONST, TokenType.STRUCT, TokenType.ENUM, TokenType.FAULT, TokenType.FUNCTION, TokenType.MACRO};
 		List(<TokenType>) found_types;
@@ -84,7 +84,7 @@ fn void MDFormater.change_state(&self, DString* file, TokenType current){
 	};
 }
 
-fn String MDFormater.evaluate_format( &self){
+fn String MDFormater.evaluate_format ( &self) {
 	self.insertion_sort();
 	DString file;
 	@pool(){
