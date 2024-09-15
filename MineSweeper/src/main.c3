@@ -6,7 +6,7 @@ import std::math;
 import std::collections::list;
 import std::math::random;
 import std::core::mem;
-import tercontrol;
+import tc;
 
 enum CellState : int (char to_char) {
 	NONE = '0',
@@ -83,11 +83,10 @@ fn int Game.lose(Game* game){
 }
 
 fn void Game.render(Game* game, bool force_reveal){
-	List(<char>) to_print;
-	to_print.new_init();
+	DString to_print;
 	int pindex = to_1d(game.px, game.py, game.size);
 	for(int i = 0; i < game.size; i++){
-		to_print.push('\t');
+		to_print.append_char('\t');
 		for(int y = 0; y < game.size; y++){
 			int index = to_1d(i, y, game.size);
 
@@ -98,25 +97,24 @@ fn void Game.render(Game* game, bool force_reveal){
 			}
 
 			if((pindex - index) == 0){
-				to_print.push('[');
-				to_print.push(current.to_char);
-				to_print.push(']');
+				to_print.append_char('[');
+				to_print.append_char(current.to_char);
+				to_print.append_char(']');
 			}else{
-				to_print.push(' ');
-				to_print.push(current.to_char);
-				to_print.push(' ');
+				to_print.append_char(' ');
+				to_print.append_char(current.to_char);
+				to_print.append_char(' ');
 			}
 		}
-		to_print.push('\n');
+		to_print.append_char('\n');
 	}
-	tercontrol::tc_print( to_print.to_tarray());
-	tercontrol::tc_print("\n> ");
+	tc::printf("%s\n> ", to_print.str_view());
 	to_print.free();
 }
 
 fn GameState Game.input(Game* game){
 	//char c = (char) libc::getchar();
-	char c = (char) tercontrol::tc_getch();
+	char c = (char) tc::getch();
 	int newX = game.px;
 	int newY = game.py;
 
@@ -136,8 +134,8 @@ fn GameState Game.input(Game* game){
 		int ind = to_1d(game.px, game.py, game.size);
 		game.board[ind].marked = !game.board[ind].marked;
 	}
-	//switching from libc::getchar to tercontrol::tc_getch requires this to fix output
-	tercontrol::tc_print("\n");
+	//switching from libc::getchar to tc::getch requires this to fix output
+	tc::print("\n");
 
 	game.px = math::clamp(newX, 0, game.size-1);
 	game.py = math::clamp(newY, 0, game.size-1);
@@ -194,8 +192,8 @@ fn CellState mine_count(Game* game, int x, int y){
 }
 
 fn int main(){
-	tercontrol::tc_enter_alt_screen();
-	tercontrol::tc_print("Welcome to Tic-Tac-Toe!\n");
+	tc::enter_alt_screen();
+	tc::print("Welcome to Tic-Tac-Toe!\n");
 	Game game;
 	//recommended difficulties
 	double difficulty = 0.12;
@@ -207,22 +205,22 @@ fn int main(){
 	GameState current = GameState.CONT;
 	while(current == GameState.CONT){
 		current = game.input();
-		tercontrol::tc_clear_screen();
-		tercontrol::tc_set_cursor(0, 0);
-		tercontrol::tc_print("\n");
+		tc::clear_screen();
+		tc::set_cursor(0, 0);
+		tc::print("\n");
 		game.render(false);
 	}
-	tercontrol::tc_clear_screen();
+	tc::clear_screen();
 	if(current == GameState.LOSE){
 		int loss = game.lose();
 		game.board[loss].state = EXPLODED;
 		game.render(true);
-		tercontrol::tc_print("You lose! Better luck next time!\n");
+		tc::print("You lose! Better luck next time!\n");
 	}else if (current == GameState.WIN){
-		tercontrol::tc_print("You win!\n");
+		tc::print("You win!\n");
 	}
-	tercontrol::tc_print("Press any key to exit...");
+	tc::print("Press any key to exit...");
 	game.input();
-	tercontrol::tc_exit_alt_screen();
+	tc::exit_alt_screen();
 	return 0;
 }
