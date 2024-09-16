@@ -1,44 +1,24 @@
 module clichecklist;
 import std::io;
+import std::math;
 import tc;
-
-
-struct Screen{
-	int[<2>] curs_pos;
-	int[<2>] term_dim;
-}
-
-fn void Screen.get_screen(&self){
-	int cx; int cy; int width; int height;
-	tc::get_cursor(&cx, &cy);
-	tc::get_cols_rows(&width, &height);
-	self.curs_pos = {cx, cy};
-	self.term_dim = {width, height};
-}
-
-fn void Screen.set_screen(&self) => tc::set_cursor(self.curs_pos.x, self.curs_pos.y);
-
-
-macro @alt_screen(Screen screen;@body())
-{
-	screen.get_screen();
-	tc::enter_alt_screen();
-	tc::clear_screen();
-	defer tc::exit_alt_screen(); // injected defer
-  	@body();
-}
+import screen;
 
 fn int main(String[] args)
 {
-	Screen screen;
-	@alt_screen(screen){
+	@alt_screen(){
+		Screen screen;
+		screen.get();
 		String title = "[CHECKLIST]";
-		tc::printfn("%s", title);
+		tc::printf_at((int)math::floor(screen.term_dim.x/2f - title.len/2f), 0 , "%s", title);
 		while(true){
-			tc::printf("%d, %d", screen.curs_pos.x, screen.curs_pos.y);
-			if(tc::getch() == 'q') break;
-			screen.curs_pos.y += 1;
-			screen.set_screen();
+			tc::printf_at(0, 0, "%d, %d, %d, %d     ", screen.curs_pos.x, screen.curs_pos.y, screen.term_dim.x,screen.term_dim.y );
+			int c = tc::getch();
+			if(c == 'q') break;
+			if (c == 'w') screen.move_vec2(screen::CURSOR_UP);
+			if (c == 'a') screen.move_vec2(screen::CURSOR_LEFT);
+			if (c == 's') screen.move_vec2(screen::CURSOR_DOWN);
+			if (c == 'd') screen.move_vec2(screen::CURSOR_RIGHT);
 		}
 	};
 	return 0;
