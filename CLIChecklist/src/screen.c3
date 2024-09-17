@@ -50,10 +50,14 @@ fn void Screen.update(&self, int x, int y){
 	self.cursor_set();
 }
 
-macro @alt_screen(;@body()) @builtin
+macro @alt_screen(;@body(s)) @builtin
 {
 	tc::enter_alt_screen();
+	tc::canon_off();
 	tc::clear_screen();
+	Screen screen;
+	screen.get();
 	defer tc::exit_alt_screen(); // injected defer
-  	@body();
+	defer tc::canon_on();
+  	@body(screen);
 }
