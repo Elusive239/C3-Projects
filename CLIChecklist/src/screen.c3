@@ -21,6 +21,7 @@ struct Screen{
 	Vector2Int term_dim;
 	TaskList in_prog;
 	TaskList finished;
+	bool checking;
 }
 
 /* 
@@ -84,7 +85,23 @@ macro @alt_screen(;@body(s)) @builtin
 	tc::clear_screen();
 	Screen screen;
 	screen.get();
+	screen.checking = true;
 	defer tc::exit_alt_screen(); // injected defer
 	defer tc::canon_on();
   	@body(screen);
+}
+
+macro @at_screen_position(Screen* screen, int cx, int cy;@body()) @builtin {
+	@at_position(cx, cy){
+		@body();
+	};
+	screen.get();
+}
+
+macro @at_position(int cx, int cy;@body()) @builtin{
+	int x; int y;
+	tc::get_cursor(&x, &y);
+	tc::set_cursor(cx, cy);
+	@body();
+	tc::set_cursor(x, y);
 }
