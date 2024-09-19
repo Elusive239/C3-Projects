@@ -101,27 +101,52 @@ fn int main(String[] args){
 			//move cursor arrow keys between check boxes
 			input = tc::getch();
 			if(input == Q){ break;}
-			else if(input == UP_ARROW && screen.curs_pos.y != 0) {
+			else if(input == UP_ARROW) {
+				if(screen.curs_pos.y != 0){
+					screen.move_vec2(screen::CURSOR_UP);
+					continue;
+				}
 				screen.move_vec2(screen::CURSOR_UP);
-			} else if(input == DOWN_ARROW  && (screen.curs_pos.y != screen.in_prog.len()-1 || screen.curs_pos.y != screen.finished.len()-1) && screen.in_prog.len() > 0) {
-				screen.move_vec2(screen::CURSOR_DOWN);
+				if(screen.curs_pos.y > screen.in_prog.len()-1 && screen.checking){
+					screen.update(screen.curs_pos.x, (int) screen.in_prog.len()-1);
+				}else if ( screen.curs_pos.y > screen.finished.len()-1){
+					screen.update(screen.curs_pos.x, (int) screen.finished.len()-1);
+				}
+			} else if(input == DOWN_ARROW) {
+				if((screen.checking && screen.curs_pos.y == screen.in_prog.len()-1) || (!screen.checking && screen.curs_pos.y == screen.finished.len()-1)){
+					screen.update(screen.curs_pos.x, 0);
+				}else {
+					screen.move_vec2(screen::CURSOR_DOWN);
+				}
 			} else if (input == 13 && screen.in_prog.len() > 0){
 				check(&screen);
 			} else if(input == CTR_X && (screen.finished.len() > 0 && screen.in_prog.len() > 0)){
-				int middle = (int) math::floor(screen.term_dim.x / 2f);
-				int pos = 1;
-				if(!screen.checking){
-					pos =  middle - (UNCHECKED.len-pos);
-					screen.update(pos, screen.curs_pos.y);
-					screen.checking = true;
-				}else {
-					screen.update(pos, screen.curs_pos.y);
-					screen.checking = false;
-				}
+				switch_side(&screen);
+			}
+
+			if(screen.in_prog.len() == 0){
+				screen.checking = false;
+			}
+
+			if(screen.finished.len() == 0){
+				screen.checking = true;
 			}
 		}
 	};
 	return 0;
+}
+
+fn void switch_side(Screen* screen){
+	int middle = (int) math::floor(screen.term_dim.x / 2f);
+	int pos = 1;
+	if(!screen.checking){
+		pos =  middle - (UNCHECKED.len-pos);
+		screen.update(pos, screen.curs_pos.y);
+		screen.checking = true;
+	}else {
+		screen.update(pos, screen.curs_pos.y);
+		screen.checking = false;
+	}
 }
 
 fn void check(Screen* screen){
